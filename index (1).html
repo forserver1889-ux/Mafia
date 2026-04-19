@@ -1,0 +1,4952 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAFIA — Online O'yin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --surface2: #1a1a24;
+  --surface3: #22222f;
+  --border: #2a2a3a;
+  --accent: #c8392b;
+  --accent2: #e74c3c;
+  --gold: #f0c040;
+  --blue: #3498db;
+  --green: #27ae60;
+  --text: #e8e8f0;
+  --text2: #9090a8;
+  --text3: #555568;
+  --mafia: #c0392b;
+  --civilian: #27ae60;
+  --doctor: #2980b9;
+  --detective: #8e44ad;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'Crimson Pro', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 4px;
+  --radius-lg: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── NOISE OVERLAY — o'chirilgan (performance) ─── */
+
+/* ── SCREENS ───────────────────────────────── */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ── AUTH SCREEN ───────────────────────────── */
+#auth-screen {
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 0%, #1a0505 0%, var(--bg) 70%);
+}
+
+.auth-logo {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.auth-logo h1 {
+  font-family: var(--font-display);
+  font-size: 96px;
+  letter-spacing: 12px;
+  color: var(--text);
+  line-height: 1;
+  position: relative;
+}
+.auth-logo h1 span { color: var(--accent); }
+.auth-logo p {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+.auth-tab {
+  flex: 1;
+  padding: 12px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .2s;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.form-group { margin-bottom: 20px; }
+.form-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.form-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  outline: none;
+  border-radius: var(--radius);
+  transition: border-color .2s;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--text3); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: all .2s;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  width: 100%;
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text2);
+}
+.btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+.btn-gold {
+  background: var(--gold);
+  color: #111;
+}
+.btn-gold:hover { filter: brightness(1.1); }
+.btn-sm { padding: 8px 14px; font-size: 10px; }
+.btn-danger { background: var(--accent); color: #fff; }
+.btn-danger:hover { background: var(--accent2); }
+.btn-success { background: var(--green); color: #fff; }
+
+/* ── BOTTOM NAV ────────────────────────────── */
+#main-screen { padding-bottom: 70px; }
+
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color .2s;
+}
+.nav-item.active { color: var(--accent); }
+.nav-icon { font-size: 20px; }
+
+/* ── TABS ──────────────────────────────────── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── PAGE HEADER ───────────────────────────── */
+.page-header {
+  padding: 24px 20px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: var(--bg);
+  z-index: 50;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 4px;
+}
+.page-subtitle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ── LOBBY / ROOM CARDS ────────────────────── */
+.rooms-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+.room-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.room-card:hover { border-color: var(--accent); background: var(--surface2); }
+.room-card.private { border-left-color: var(--gold); }
+.room-card.playing { border-left-color: var(--text3); opacity: .6; pointer-events: none; }
+
+.room-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 2px;
+}
+.room-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+.room-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+.badge-public { background: rgba(39,174,96,.15); color: var(--green); }
+.badge-private { background: rgba(240,192,64,.1); color: var(--gold); }
+.badge-playing { background: var(--surface3); color: var(--text3); }
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: .4; }
+
+/* ── MODAL ─────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  padding: 32px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  animation: slideUp .2s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity:0; } }
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 3px;
+  margin-bottom: 24px;
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: none; border: none; color: var(--text3);
+  font-size: 20px; cursor: pointer;
+}
+.modal-close:hover { color: var(--text); }
+
+/* ── WAITING ROOM ──────────────────────────── */
+#room-screen {
+  background: radial-gradient(ellipse at 50% 100%, #150303 0%, var(--bg) 60%);
+}
+.waiting-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.waiting-header h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 3px;
+  flex: 1;
+}
+.room-id-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--surface2);
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  letter-spacing: 1px;
+  cursor: pointer;
+  user-select: none;
+  transition: color .2s, border-color .2s;
+}
+.room-id-badge:hover {
+  color: var(--text);
+  border-color: var(--text3);
+}
+
+.players-grid {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.player-slot {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  transition: border-color .2s;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 10px;
+}
+.player-slot.empty {
+  border-style: dashed;
+  opacity: .4;
+}
+/* Orqa fon: butun kartani to'liq qoplaydi */
+.player-slot-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--surface3);
+  border-radius: 6px;
+  z-index: 0;
+}
+.player-slot-bg-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.player-slot-bg-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.65) 100%);
+}
+/* Yumaloq avatar: fon ustida, markazda yuqorida */
+.player-avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  font-family: var(--font-display);
+  border: 2.5px solid rgba(255,255,255,0.35);
+  overflow: hidden;
+  background: var(--surface2);
+  position: relative; z-index: 2;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.7);
+  flex-shrink: 0;
+  margin-top: 18px;
+}
+.player-slot-info {
+  padding: 6px 8px 0;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+.player-slot-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #fff;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+.player-host-badge {
+  position: absolute; top: 6px; right: 6px;
+  font-size: 11px;
+  z-index: 3;
+}
+.player-ready-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  margin: 5px auto 0;
+  position: relative; z-index: 2;
+}
+
+.waiting-actions {
+  padding: 20px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.waiting-status {
+  padding: 0 20px 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text3);
+  letter-spacing: 1px;
+}
+
+/* ── GAME SCREEN ───────────────────────────── */
+#game-screen {
+  background: var(--bg);
+}
+.game-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+}
+.phase-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.phase-icon { font-size: 28px; }
+.phase-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 3px;
+}
+.phase-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 2px;
+}
+.timer-circle {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--accent);
+  position: relative;
+}
+.timer-circle.warning { color: var(--accent); border-color: var(--accent); }
+
+.my-role-banner {
+  margin: 16px;
+  padding: 16px 20px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.my-role-icon { font-size: 36px; }
+.my-role-name {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 4px;
+}
+.my-role-desc {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+/* Role colors */
+.role-mafia    { border-color: var(--mafia);    background: rgba(192,57,43,.08); }
+.role-don      { border-color: #c0392b;         background: rgba(192,57,43,.12); }
+.role-lawyer   { border-color: #e67e22;         background: rgba(230,126,34,.08); }
+.role-civilian { border-color: var(--civilian); background: rgba(39,174,96,.08); }
+.role-doctor   { border-color: var(--doctor);   background: rgba(41,128,185,.08); }
+.role-detective{ border-color: var(--detective);background: rgba(142,68,173,.08); }
+.role-sergeant { border-color: #2980b9;         background: rgba(41,128,185,.06); }
+.role-escort   { border-color: #e91e8c;         background: rgba(233,30,140,.06); }
+.role-vagrant  { border-color: #795548;         background: rgba(121,85,72,.06); }
+.role-warlock  { border-color: #9c27b0;         background: rgba(156,39,176,.08); }
+.role-wolf     { border-color: #ff9800;         background: rgba(255,152,0,.06); }
+.role-killer   { border-color: #f44336;         background: rgba(244,67,54,.10); }
+
+.game-log {
+  margin: 0 16px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 16px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.log-entry {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: .5px;
+}
+.log-entry:last-child { border-bottom: none; }
+.log-entry.important { color: var(--accent); }
+.log-entry.good { color: var(--green); }
+
+.players-game-list {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.player-game-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+}
+.player-game-card:hover:not(.dead):not(.self) { border-color: var(--accent); }
+.player-game-card.dead { opacity: .35; }
+.player-game-card.dead .player-avatar { filter: grayscale(1); }
+.player-game-card.targeted { border-color: var(--accent); background: rgba(200,57,43,.08); }
+.player-game-card.protected { border-color: var(--doctor); background: rgba(41,128,185,.08); }
+.player-game-card.self { border-left: 3px solid var(--gold); }
+.player-game-card.voted { border-color: var(--gold); background: rgba(240,192,64,.08); }
+
+.dead-overlay {
+  position: absolute; inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  pointer-events: none;
+}
+.player-game-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  flex: 1;
+}
+.player-vote-count {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--gold);
+  min-width: 24px;
+  text-align: right;
+}
+.player-revealed-role {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+/* ── CHAT ──────────────────────────────────── */
+.chat-section {
+  margin: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.chat-messages {
+  height: 120px;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chat-msg {
+  font-size: 14px;
+}
+.chat-msg-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  margin-right: 6px;
+}
+.chat-msg-text { color: var(--text2); }
+.chat-input-row {
+  display: flex;
+  border-top: 1px solid var(--border);
+}
+.chat-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+}
+.chat-input::placeholder { color: var(--text3); }
+.chat-send {
+  background: none;
+  border: none;
+  border-left: 1px solid var(--border);
+  color: var(--text3);
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: color .2s;
+}
+.chat-send:hover { color: var(--accent); }
+
+/* ── MAFIA CHAT ────────────────────────────── */
+.mafia-chat-section {
+  margin: 0 16px 16px;
+  border: 1px solid var(--mafia);
+  background: rgba(192,57,43,.05);
+}
+.mafia-chat-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--mafia);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--mafia);
+}
+
+/* ── GAME ACTIONS ──────────────────────────── */
+.game-actions {
+  padding: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── PROFILE ───────────────────────────────── */
+.profile-container { padding: 20px; }
+
+/* Profile hero: orqa fon bu yerda ko'rinadi */
+.profile-hero {
+  border: 1px solid var(--border);
+  padding: 0;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  min-height: 140px;
+}
+
+/* Orqa fon: profile-hero ichida butunlay qoplaydi */
+.profile-hero-bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  background: var(--surface);
+  transition: background 0.4s;
+}
+.profile-hero-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.2) 100%);
+}
+
+/* Content wrapper: fon ustida z-index:1 */
+.profile-card-wrapper {
+  padding: 24px 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+/* Avatar: yumaloq doira (chap tomonda) */
+.player-bg-card {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.25);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--surface3);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.7);
+  transition: border-color 0.3s;
+  cursor: pointer;
+}
+.player-bg-card:hover { border-color: var(--gold); }
+
+/* Avatar ichidagi fon */
+.player-bg-card .profile-bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  transition: background 0.4s;
+  z-index: 0;
+}
+
+/* Avatar ichidagi boshlang'ich harf */
+.player-bg-card .player-initial {
+  position: absolute; inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 34px;
+  color: #fff;
+  z-index: 2;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+  letter-spacing: 2px;
+}
+
+.player-card-info { flex: 1; }
+.profile-name {
+  font-family: var(--font-display);
+  font-size: 32px;
+  letter-spacing: 4px;
+  margin-bottom: 4px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+.profile-phone {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 1px;
+}
+
+.level-section {
+  margin-top: 20px;
+}
+.level-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+.level-num {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--gold);
+}
+.exp-bar {
+  height: 4px;
+  background: var(--surface3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.exp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+  transition: width .5s ease;
+}
+
+.wallet-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.wallet-amount {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 3px;
+  color: var(--gold);
+}
+.wallet-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.profile-actions { display: flex; flex-direction: column; gap: 10px; }
+.profile-action-row { display: flex; gap: 10px; }
+
+/* ── COLLECTIONS ───────────────────────────── */
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  padding: 16px 0;
+}
+.collection-item {
+  aspect-ratio: 1;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+.collection-item.selected { border-color: var(--gold); }
+.collection-item:hover { border-color: var(--text2); }
+.collection-item-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,.7);
+  padding: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-align: center;
+  color: var(--text3);
+}
+
+/* ── SHOP ──────────────────────────────────── */
+.shop-grid {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+.shop-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: all .2s;
+  cursor: pointer;
+}
+.shop-item:hover { border-color: var(--text2); transform: translateY(-2px); }
+.shop-item.owned { border-color: var(--green); }
+.shop-item-preview {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  position: relative;
+  overflow: hidden;
+}
+.shop-item-info {
+  padding: 12px;
+}
+.shop-item-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.shop-item-price {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── ADMIN ─────────────────────────────────── */
+.admin-container { padding: 16px; }
+.admin-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.admin-section-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.admin-section-body { padding: 16px; }
+
+.users-table { width: 100%; border-collapse: collapse; }
+.users-table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.users-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.users-table tr:last-child td { border-bottom: none; }
+.users-table tr:hover td { background: var(--surface2); }
+
+/* ── RULES MODAL ───────────────────────────── */
+.rules-content {
+  max-height: 70vh;
+  overflow-y: auto;
+  line-height: 1.8;
+}
+.rules-content h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin: 20px 0 8px;
+}
+.rules-content p, .rules-content li {
+  font-size: 15px;
+  color: var(--text2);
+  margin-bottom: 4px;
+}
+
+/* ── TOAST ─────────────────────────────────── */
+#toast-container {
+  position: fixed; bottom: 80px; right: 16px;
+  z-index: 9000;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  padding: 12px 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  animation: toastIn .2s ease;
+  max-width: 300px;
+}
+.toast.success { border-left-color: var(--green); }
+.toast.error { border-left-color: var(--accent); }
+.toast.info { border-left-color: var(--blue); }
+@keyframes toastIn { from { transform: translateX(20px); opacity:0; } }
+
+
+/* ── CUSTOM CONFIRM DIALOG ─────────────────── */
+#confirm-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.75);
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+#confirm-overlay.open { display: flex; }
+#confirm-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  padding: 32px 28px 24px;
+  width: 100%;
+  max-width: 380px;
+  animation: slideUp .18s ease;
+  position: relative;
+}
+#confirm-icon {
+  font-size: 36px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+#confirm-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  color: var(--text);
+  text-align: center;
+}
+#confirm-message {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: .5px;
+  color: var(--text2);
+  line-height: 1.7;
+  text-align: center;
+  margin-bottom: 24px;
+  white-space: pre-line;
+}
+#confirm-buttons {
+  display: flex;
+  gap: 10px;
+}
+#confirm-buttons button {
+  flex: 1;
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: all .15s;
+}
+#confirm-ok {
+  background: var(--accent);
+  color: #fff;
+}
+#confirm-ok:hover { background: var(--accent2); }
+#confirm-ok.green { background: var(--green); }
+#confirm-ok.green:hover { filter: brightness(1.1); }
+#confirm-cancel {
+  background: var(--surface3);
+  border: 1px solid var(--border) !important;
+  color: var(--text2);
+}
+#confirm-cancel:hover { border-color: var(--text2) !important; color: var(--text); }
+
+/* ── GAME OVER ─────────────────────────────── */
+.game-over-screen {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.95);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 24px;
+}
+.game-over-screen.show { display: flex; }
+.game-over-icon { font-size: 80px; }
+.game-over-title {
+  font-family: var(--font-display);
+  font-size: 64px;
+  letter-spacing: 8px;
+  text-align: center;
+}
+.game-over-sub {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-align: center;
+}
+.winners-list {
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+}
+.winner-chip {
+  padding: 6px 14px;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+/* ── SELECT ────────────────────────────────── */
+select.form-input {
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23555568' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* ── SCROLLBAR ─────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── NIGHT OVERLAY (decorative) ─────────────── */
+.night-overlay {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,10,.6) 100%);
+  pointer-events: none; z-index: 1;
+}
+.night-overlay.active { opacity: 1; }
+
+/* ── MISC ──────────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+.text-accent { color: var(--accent); }
+.text-gold { color: var(--gold); }
+.text-green { color: var(--green); }
+.text-muted { color: var(--text3); }
+.text-mono { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; }
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.p-16 { padding: 16px; }
+.hidden { display: none !important; }
+.badge-red { background: rgba(200,57,43,.15); color: var(--accent); padding: 2px 8px; font-family: var(--font-mono); font-size: 10px; border-radius: 2px; letter-spacing: 1px; }
+.badge-green { background: rgba(39,174,96,.15); color: var(--green); padding: 2px 8px; font-family: var(--font-mono); font-size: 10px; border-radius: 2px; letter-spacing: 1px; }
+
+/* ── PATTERN / EFFECT SYSTEM ────────────────── */
+.bg-pattern-overlay {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Shop item pattern preview */
+.shop-item-preview canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+}
+/* Collection item pattern preview */
+.collection-item canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  border-radius: var(--radius);
+}
+
+/* Pattern name badge in admin */
+.pattern-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.pattern-btn {
+  padding: 10px 6px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-align: center;
+  border-radius: var(--radius);
+  transition: all .2s;
+  text-transform: uppercase;
+}
+.pattern-btn:hover { border-color: var(--accent); color: var(--text); }
+.pattern-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(240,192,64,.1); }
+
+/* Speed / color controls */
+.effect-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.effect-controls label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 1px;
+}
+.id-search-result {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 16px;
+  margin-top: 12px;
+}
+.id-search-info {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 2;
+  color: var(--text2);
+}
+
+/* spin animation for loading */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin 1s linear infinite; }
+
+/* Inline flex row */
+.row { display: flex; align-items: center; gap: 8px; }
+
+/* Color swatch */
+.color-swatch {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="screen active">
+  <div style="padding:20px;">
+    <div class="auth-logo">
+      <h1>M<span>A</span>FIA</h1>
+      <p>Online Multiplayer O'yini</p>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Kirish</button>
+        <button class="auth-tab" onclick="switchAuthTab('register')">Ro'yxatdan o'tish</button>
+      </div>
+      <!-- Login -->
+      <div id="login-form">
+        <div class="form-group">
+          <label class="form-label">Telefon raqam</label>
+          <input type="tel" class="form-input" id="login-phone" placeholder="+998901234567">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Parol</label>
+          <input type="password" class="form-input" id="login-pass" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" onclick="login()">Kirish</button>
+      </div>
+      <!-- Register -->
+      <div id="register-form" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Ism</label>
+          <input type="text" class="form-input" id="reg-name" placeholder="To'liq ismingiz">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Telefon raqam</label>
+          <input type="tel" class="form-input" id="reg-phone" placeholder="+998901234567">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Parol</label>
+          <input type="password" class="form-input" id="reg-pass" placeholder="Kamida 6 ta belgi">
+        </div>
+        <button class="btn btn-primary" onclick="register()">Ro'yxatdan o'tish</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN SCREEN -->
+<div id="main-screen" class="screen">
+  <!-- HOME TAB -->
+  <div id="tab-home" class="tab-content active">
+    <div class="page-header">
+      <div>
+        <div class="page-title">XONALAR</div>
+        <div class="page-subtitle">Ochiq o'yinlar</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openCreateRoomModal()">+ Yangi</button>
+    </div>
+    <div id="public-rooms-list" class="rooms-list">
+      <div class="empty-state">
+        <div class="empty-icon">🃏</div>
+        <div>Hozirda ochiq xona yo'q</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVATE ROOMS TAB -->
+  <div id="tab-private" class="tab-content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">SHAXSIY</div>
+        <div class="page-subtitle">Maxfiy xonalar</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="openFindByIdModal()">ID orqali</button>
+    </div>
+    <div id="private-rooms-list" class="rooms-list">
+      <div class="empty-state">
+        <div class="empty-icon">🔐</div>
+        <div>Shaxsiy xona topilmadi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHOP TAB -->
+  <div id="tab-shop" class="tab-content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">DO'KON</div>
+        <div class="page-subtitle">Fonlar & bezaklar</div>
+      </div>
+    </div>
+    <div id="shop-grid" class="shop-grid"></div>
+  </div>
+
+  <!-- PROFILE TAB -->
+  <div id="tab-profile" class="tab-content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">PROFIL</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="openRulesModal()">📖 Qoidalar</button>
+    </div>
+    <div class="profile-container">
+      <div class="profile-hero" id="profile-hero">
+        <div class="profile-hero-bg" id="profile-hero-bg-el">
+          <canvas id="profile-hero-bg-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+        </div>
+        <div class="profile-card-wrapper">
+          <div class="player-bg-card" id="profile-bg-card" onclick="openCollectionsModal()" title="Avatar va fon tanlash">
+            <div class="profile-bg" id="profile-bg-el"></div>
+            <canvas id="profile-avatar-canvas" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;pointer-events:none;z-index:1;"></canvas>
+            <div class="player-initial" id="profile-initial">?</div>
+          </div>
+          <div class="player-card-info">
+            <div class="profile-name" id="profile-name-display">—</div>
+            <div class="profile-phone" id="profile-phone-display">—</div>
+            <div class="level-section">
+              <div class="level-label">
+                <span>DARAJA <span class="level-num" id="profile-level">0</span></span>
+                <span id="profile-exp-label">0 / 150 EXP</span>
+              </div>
+              <div class="exp-bar"><div class="exp-fill" id="profile-exp-bar" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:6px 20px 10px; font-family:var(--font-mono); font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:1px; position:relative; z-index:1;">
+          🖼️ Doiraga bosib avatar · Kolleksiyalardan orqa fon tanlang
+        </div>
+      </div>
+      <div class="wallet-card">
+        <div>
+          <div class="wallet-label">Hamyon</div>
+          <div class="wallet-amount">💰 <span id="profile-wallet">0</span> so'm</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="openTelegram()">To'ldirish</button>
+      </div>
+      <div class="profile-actions">
+        <div class="profile-action-row">
+          <button class="btn btn-ghost" style="flex:1;" onclick="openCollectionsModal()">🎨 Kolleksiyalar</button>
+          <button class="btn btn-ghost" style="flex:1;" onclick="openEditProfileModal()">✏️ Tahrirlash</button>
+        </div>
+        <button class="btn btn-ghost" onclick="logout()" style="width:100%;">🚪 Hisobdan chiqish</button>
+        <button class="btn btn-danger" onclick="deleteAccount()">🗑️ Hisobni o'chirish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN TAB -->
+  <div id="tab-admin" class="tab-content hidden">
+    <div class="page-header">
+      <div class="page-title">ADMIN PANEL</div>
+    </div>
+    <div class="admin-container">
+      <!-- Users -->
+      <div class="admin-section">
+        <div class="admin-section-header">
+          Foydalanuvchilar
+          <span id="users-count" class="badge-red">0</span>
+        </div>
+        <div class="admin-section-body" style="overflow-x:auto;">
+          <table class="users-table" id="users-table">
+            <thead><tr>
+              <th>Ism</th><th>Telefon</th><th>Daraja</th><th>EXP</th><th>Hamyon</th><th>Amal</th><th>O'chirish</th>
+            </tr></thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Faol xonalar -->
+      <div class="admin-section">
+        <div class="admin-section-header" style="cursor:pointer;" onclick="loadAdminRooms()">
+          Faol xonalar <span id="admin-rooms-count" class="badge-red">0</span>
+          <span style="font-size:13px; color:var(--text3); margin-left:8px;">↻ Yangilash</span>
+        </div>
+        <div class="admin-section-body" style="overflow-x:auto;">
+          <div id="admin-rooms-list">
+            <div class="text-mono text-muted" style="font-size:11px;">↑ Yuklash uchun bosing</div>
+          </div>
+        </div>
+      </div>
+      <!-- Xona lookup -->
+      <div class="admin-section">
+        <div class="admin-section-header">Xona tekshirish</div>
+        <div class="admin-section-body">
+          <div class="row mb-16">
+            <input type="text" class="form-input" id="admin-room-id-input" placeholder="Xona ID kiriting" style="flex:1;" onkeydown="if(event.key==='Enter')adminLookupRoom()">
+            <button class="btn btn-primary btn-sm" onclick="adminLookupRoom()">Tekshirish</button>
+          </div>
+          <div id="admin-room-result"></div>
+        </div>
+      </div>
+      <!-- Backgrounds list -->
+      <div class="admin-section">
+        <div class="admin-section-header" style="cursor:pointer;" onclick="loadAdminBackgrounds()">
+          Mavjud fonlar <span style="font-size:13px; color:var(--text3);">↻ Yangilash</span>
+        </div>
+        <div class="admin-section-body" style="overflow-x:auto;">
+          <div id="admin-backgrounds-list">
+            <div class="text-mono text-muted" style="font-size:11px;">↑ Yuklash uchun bosing</div>
+          </div>
+        </div>
+      </div>
+      <!-- Add background -->
+      <div class="admin-section">
+        <div class="admin-section-header">Yangi fon qo'shish</div>
+        <div class="admin-section-body">
+          <div class="form-group">
+            <label class="form-label">Nom</label>
+            <input type="text" class="form-input" id="admin-bg-name" placeholder="Fon nomi">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tur</label>
+            <select class="form-input" id="admin-bg-type">
+              <option value="background">Fon (background)</option>
+              <option value="avatar">Avatar foni (avatar)</option>
+            </select>
+          </div>
+
+          <!-- COLOR MODE TABS -->
+          <div class="form-group">
+            <label class="form-label">Rang turi</label>
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+              <button class="btn btn-primary btn-sm" id="color-mode-solid" onclick="setColorMode('solid')" style="flex:1;">🎨 Bir rang</button>
+              <button class="btn btn-ghost btn-sm" id="color-mode-gradient" onclick="setColorMode('gradient')" style="flex:1;">🌈 Gradient</button>
+            </div>
+
+            <!-- SOLID COLOR -->
+            <div id="solid-color-section">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <input type="color" id="solid-color-picker" value="#1a1a2e" style="width:56px; height:48px; border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; background:none; padding:2px;">
+                <div style="flex:1;">
+                  <div class="form-label" style="margin-bottom:4px;">Rang kodi</div>
+                  <input type="text" class="form-input" id="solid-color-hex" placeholder="#1a1a2e" maxlength="30" style="font-family:var(--font-mono); font-size:13px;">
+                </div>
+              </div>
+            </div>
+
+            <!-- GRADIENT BUILDER -->
+            <div id="gradient-color-section" style="display:none;">
+              <div style="margin-bottom:10px; font-family:var(--font-mono); font-size:11px; color:var(--text3); letter-spacing:1px;">GRADIENT YARATISH</div>
+              <div style="display:flex; gap:12px; margin-bottom:12px; align-items:center; flex-wrap:wrap;">
+                <div>
+                  <div class="form-label" style="margin-bottom:4px;">Bosh rang</div>
+                  <input type="color" id="grad-color1" value="#c8392b" style="width:56px; height:48px; border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; background:none; padding:2px;">
+                </div>
+                <div>
+                  <div class="form-label" style="margin-bottom:4px;">Oxirgi rang</div>
+                  <input type="color" id="grad-color2" value="#0a0a1a" style="width:56px; height:48px; border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; background:none; padding:2px;">
+                </div>
+                <div style="flex:1; min-width:120px;">
+                  <div class="form-label" style="margin-bottom:4px;">Yo'nalish</div>
+                  <select class="form-input" id="grad-direction" style="font-size:13px;">
+                    <option value="135deg">↘ Diagonal</option>
+                    <option value="to bottom">↓ Vertikal</option>
+                    <option value="to right">→ Gorizontal</option>
+                    <option value="45deg">↗ Teskari diagonal</option>
+                    <option value="to bottom right">↘ To'g'ri pastga</option>
+                  </select>
+                </div>
+              </div>
+              <!-- Radial option -->
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <input type="checkbox" id="grad-radial" style="width:16px; height:16px; cursor:pointer; accent-color:var(--accent);">
+                <label for="grad-radial" style="font-family:var(--font-mono); font-size:11px; color:var(--text2); cursor:pointer; letter-spacing:1px;">RADIAL gradient (doira shakli)</label>
+              </div>
+              <!-- Optional 3rd color -->
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <input type="checkbox" id="grad-use-mid" style="width:16px; height:16px; cursor:pointer; accent-color:var(--accent);">
+                <label for="grad-use-mid" style="font-family:var(--font-mono); font-size:11px; color:var(--text2); cursor:pointer; letter-spacing:1px;">O'rta rang qo'shish</label>
+                <input type="color" id="grad-color-mid" value="#8e44ad" style="width:40px; height:36px; border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; background:none; padding:2px; display:none;">
+              </div>
+              <div class="form-label" style="margin-bottom:4px;">Natija (tahrirlash mumkin)</div>
+              <input type="text" class="form-input" id="gradient-result-input" style="font-family:var(--font-mono); font-size:11px;" placeholder="Gradient kodi bu yerda ko'rinadi">
+            </div>
+          </div>
+
+          <!-- Hidden field that stores final color value -->
+          <input type="hidden" id="admin-bg-color" value="">
+
+          <div class="form-group">
+            <label class="form-label">Naqsh / Effekt (ixtiyoriy)</label>
+            <div class="pattern-selector" id="pattern-selector">
+              <button class="pattern-btn active" onclick="selectPattern('none')" data-pattern="none">Yo'q</button>
+              <button class="pattern-btn" onclick="selectPattern('dots')" data-pattern="dots">Nuqtalar</button>
+              <button class="pattern-btn" onclick="selectPattern('grid')" data-pattern="grid">Tarmoq</button>
+              <button class="pattern-btn" onclick="selectPattern('hexagon')" data-pattern="hexagon">Olti burchak</button>
+              <button class="pattern-btn" onclick="selectPattern('waves')" data-pattern="waves">To'lqinlar</button>
+              <button class="pattern-btn" onclick="selectPattern('stars')" data-pattern="stars">Yulduzlar</button>
+              <button class="pattern-btn" onclick="selectPattern('rain')" data-pattern="rain">Yomg'ir</button>
+              <button class="pattern-btn" onclick="selectPattern('snow')" data-pattern="snow">Qor</button>
+              <button class="pattern-btn" onclick="selectPattern('particles')" data-pattern="particles">Zarralar</button>
+              <button class="pattern-btn" onclick="selectPattern('fire')" data-pattern="fire">Olov</button>
+              <button class="pattern-btn" onclick="selectPattern('matrix')" data-pattern="matrix">Matrix</button>
+              <button class="pattern-btn" onclick="selectPattern('pulse')" data-pattern="pulse">Pulsatsiya</button>
+              <button class="pattern-btn" onclick="selectPattern('constellation')" data-pattern="constellation">Yulduz ulanish</button>
+              <button class="pattern-btn" onclick="selectPattern('bubbles')" data-pattern="bubbles">Pufaklar</button>
+              <button class="pattern-btn" onclick="selectPattern('lightning')" data-pattern="lightning">⚡ Chaqmoq</button>
+              <button class="pattern-btn" onclick="selectPattern('neon')" data-pattern="neon">💜 Neon</button>
+              <button class="pattern-btn" onclick="selectPattern('aurora')" data-pattern="aurora">🌌 Aurora</button>
+              <button class="pattern-btn" onclick="selectPattern('galaxy')" data-pattern="galaxy">✨ Galaktika</button>
+              <button class="pattern-btn" onclick="selectPattern('hologram')" data-pattern="hologram">🔷 Hologram</button>
+              <button class="pattern-btn" onclick="selectPattern('cyberpunk')" data-pattern="cyberpunk">🟣 Cyberpunk</button>
+              <button class="pattern-btn" onclick="selectPattern('vortex')" data-pattern="vortex">🌀 Vorteks</button>
+              <button class="pattern-btn" onclick="selectPattern('portal')" data-pattern="portal">🔮 Portal</button>
+              <button class="pattern-btn" onclick="selectPattern('plasma')" data-pattern="plasma">🔴 Plazma</button>
+            </div>
+            <div class="effect-controls">
+              <label>Naqsh rangi:</label>
+              <input type="color" id="pattern-color" value="#ffffff" style="width:40px; height:32px; border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; background:none; padding:2px;">
+              <label>Shaffoflik:</label>
+              <input type="range" id="pattern-opacity" min="0.05" max="1" step="0.05" value="0.3" style="width:80px; accent-color:var(--accent);">
+              <span id="pattern-opacity-val" style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">30%</span>
+              <label>Tezlik:</label>
+              <input type="range" id="pattern-speed" min="0.1" max="3" step="0.1" value="1" style="width:70px; accent-color:var(--accent);">
+              <span id="pattern-speed-val" style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">1x</span>
+              <label>O'lcham:</label>
+              <input type="range" id="pattern-size" min="0.5" max="3" step="0.1" value="1" style="width:70px; accent-color:var(--accent);">
+              <span id="pattern-size-val" style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">1x</span>
+            </div>
+            <input type="hidden" id="admin-bg-pattern" value="none">
+            <input type="hidden" id="admin-bg-pattern-color" value="#ffffff">
+            <input type="hidden" id="admin-bg-pattern-opacity" value="0.3">
+            <input type="hidden" id="admin-bg-pattern-speed" value="1">
+            <input type="hidden" id="admin-bg-pattern-size" value="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Narxi (so'm)</label>
+            <input type="number" class="form-input" id="admin-bg-price" placeholder="0 = bepul">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sovg'a — qaysi darajada berilsin (bo'sh = yo'q)</label>
+            <input type="number" class="form-input" id="admin-bg-reward-level" placeholder="5, 10, 15...">
+          </div>
+          <!-- Preview -->
+          <div id="bg-preview" style="margin-bottom:16px; height:120px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:32px; border-radius:var(--radius); transition: background .3s; position:relative; overflow:hidden;"><canvas id="bg-preview-canvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas></div>
+          <button class="btn btn-primary" onclick="adminAddBackground()">✅ Fon qo'shish</button>
+        </div>
+      </div>
+      <!-- Wallet -->
+      <div class="admin-section">
+        <div class="admin-section-header">Hamyon to'ldirish</div>
+        <div class="admin-section-body">
+          <div class="row mb-16" style="gap:8px; flex-wrap:wrap;">
+            <input type="tel" class="form-input" id="inline-wallet-phone" placeholder="+998..." style="flex:1; min-width:160px;">
+            <input type="number" class="form-input" id="inline-wallet-amount" placeholder="Miqdor (so'm)" style="width:150px;">
+            <button class="btn btn-gold btn-sm" onclick="inlineAddWallet()">💰 Qo'shish</button>
+          </div>
+          <div id="inline-wallet-result" style="font-family:var(--font-mono); font-size:11px; color:var(--green);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('home')" id="nav-home">
+      <span class="nav-icon">🏠</span><span>Bosh</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('private')" id="nav-private">
+      <span class="nav-icon">🔐</span><span>Shaxsiy</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('shop')" id="nav-shop">
+      <span class="nav-icon">🛍️</span><span>Do'kon</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('profile')" id="nav-profile">
+      <span class="nav-icon">👤</span><span>Profil</span>
+    </button>
+    <button class="nav-item hidden" onclick="switchTab('admin')" id="nav-admin">
+      <span class="nav-icon">⚙️</span><span>Admin</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ROOM SCREEN (waiting lobby) -->
+<div id="room-screen" class="screen" style="position:relative;">
+  <div id="room-screen-bg" style="position:fixed;inset:0;z-index:0;pointer-events:none;transition:background 0.4s;"></div>
+  <div style="position:relative;z-index:1;display:contents;">
+  <div class="waiting-header">
+    <button class="btn btn-ghost btn-sm" onclick="leaveRoom()">← Chiqish</button>
+    <h2 id="room-screen-name">Xona</h2>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span id="room-screen-password" style="display:none;font-family:var(--font-mono);font-size:11px;color:var(--gold);background:rgba(240,192,64,.1);padding:6px 10px;border:1px solid rgba(240,192,64,.3);letter-spacing:1px;">🔑 —</span>
+      <span class="room-id-badge" id="room-screen-id" onclick="copyRoomId()" title="Nusxalash uchun bosing">ID: —</span>
+    </div>
+  </div>
+  <div id="room-players-grid" class="players-grid"></div>
+  <div class="waiting-status" id="waiting-status">Boshqa o'yinchilarni kutmoqda...</div>
+  <div class="waiting-actions">
+    <button class="btn btn-primary" id="start-btn" onclick="startGame()" style="display:none;">🎮 O'yinni boshlash</button>
+    <button class="btn btn-ghost btn-sm" onclick="copyRoomId()">📋 ID nusxalash</button>
+  </div>
+  <!-- Chat in waiting room -->
+  <div class="chat-section" style="margin:16px;">
+    <div class="chat-messages" id="waiting-chat-messages"></div>
+    <div class="chat-input-row">
+      <input type="text" class="chat-input" id="waiting-chat-input" placeholder="Xabar yozing..." maxlength="200" onkeydown="if(event.key==='Enter')sendWaitingChat()">
+      <button class="chat-send" onclick="sendWaitingChat()">➤</button>
+    </div>
+  </div>
+  </div><!-- end room z-index wrapper -->
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen" class="screen" style="position:relative;">
+  <div id="game-screen-bg" style="position:fixed;inset:0;z-index:0;pointer-events:none;transition:background 0.4s;"></div>
+  <div style="position:relative;z-index:1;display:contents;">
+  <div class="game-header">
+    <div class="phase-indicator">
+      <span class="phase-icon" id="phase-icon">🌙</span>
+      <div>
+        <div class="phase-name" id="phase-name">TUN</div>
+        <div class="phase-sub" id="phase-sub">Mafia harakatda...</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="timer-circle" id="timer-el">—</div>
+      <button class="btn btn-danger btn-sm" onclick="leaveGameDuringPlay()" title="O'yindan chiqish" style="padding:8px 12px; font-size:11px;">🚪 Chiqish</button>
+    </div>
+  </div>
+
+  <!-- My role banner -->
+  <div class="my-role-banner" id="my-role-banner" style="border-color: var(--border);">
+    <span class="my-role-icon" id="my-role-icon">?</span>
+    <div>
+      <div class="my-role-name" id="my-role-name">Rol kutilmoqda</div>
+      <div class="my-role-desc" id="my-role-desc">O'yin tez boshlanadi</div>
+    </div>
+  </div>
+
+  <!-- Game log -->
+  <div class="game-log" id="game-log"></div>
+
+  <!-- Mafia chat (only visible to mafia) -->
+  <div class="mafia-chat-section hidden" id="mafia-chat-section">
+    <div class="mafia-chat-header">🔴 MAFIA CHAT</div>
+    <div class="chat-messages" id="mafia-chat-messages" style="height:80px;"></div>
+    <div class="chat-input-row">
+      <input type="text" class="chat-input" id="mafia-chat-input" placeholder="Mafia ichki xabar..." maxlength="200" onkeydown="if(event.key==='Enter')sendMafiaChat()">
+      <button class="chat-send" onclick="sendMafiaChat()">➤</button>
+    </div>
+  </div>
+
+  <!-- Players list -->
+  <div class="players-game-list" id="game-players-list"></div>
+
+  <!-- Day chat -->
+  <div class="chat-section" id="day-chat-section" style="margin-top:16px;">
+    <div style="padding:8px 12px; border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:10px; letter-spacing:2px; color:var(--text3);">MUHOKAMA</div>
+    <div class="chat-messages" id="day-chat-messages"></div>
+    <div class="chat-input-row">
+      <input type="text" class="chat-input" id="day-chat-input" placeholder="Fikringizni bildiring..." maxlength="200" onkeydown="if(event.key==='Enter')sendDayChat()">
+      <button class="chat-send" onclick="sendDayChat()">➤</button>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="game-actions" id="game-actions"></div>
+  </div><!-- end game z-index wrapper -->
+</div>
+
+<!-- GAME OVER -->
+<div class="game-over-screen" id="game-over-screen">
+  <div class="game-over-icon" id="game-over-icon">🏆</div>
+  <div class="game-over-title" id="game-over-title">G'ALABA</div>
+  <div class="game-over-sub" id="game-over-sub">Tinch aholi yutdi</div>
+  <div class="winners-list" id="winners-list"></div>
+  <div style="display:flex; gap:12px;">
+    <button class="btn btn-primary" onclick="exitGame()">Lobi</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<!-- CUSTOM CONFIRM DIALOG -->
+<div id="confirm-overlay">
+  <div id="confirm-box">
+    <div id="confirm-icon">⚠️</div>
+    <div id="confirm-title">TASDIQLASH</div>
+    <div id="confirm-message"></div>
+    <div id="confirm-buttons">
+      <button id="confirm-cancel">Bekor qilish</button>
+      <button id="confirm-ok">Tasdiqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODALS ──────────────────────────────── -->
+
+<!-- Create Room -->
+<div class="modal-overlay" id="create-room-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('create-room-modal')">✕</button>
+    <div class="modal-title">YANGI XONA</div>
+    <div class="form-group">
+      <label class="form-label">Xona nomi</label>
+      <input type="text" class="form-input" id="new-room-name" placeholder="Mening xonam" maxlength="30">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tur</label>
+      <select class="form-input" id="new-room-type" onchange="toggleRoomPassword()">
+        <option value="public">Ommaviy</option>
+        <option value="private">Shaxsiy (parolli)</option>
+      </select>
+    </div>
+    <div class="form-group" id="room-password-group" style="display:none;">
+      <label class="form-label">Parol</label>
+      <input type="text" class="form-input" id="new-room-password" placeholder="Xona paroli" maxlength="20">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Maksimal o'yinchilar (4–30)</label>
+      <input type="number" class="form-input" id="new-room-max" min="4" max="30" value="8">
+    </div>
+    <button class="btn btn-primary mt-16" onclick="createRoom()">✅ Xona yaratish</button>
+  </div>
+</div>
+
+<!-- Join Private (password) -->
+<div class="modal-overlay" id="join-private-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('join-private-modal')">✕</button>
+    <div class="modal-title">XONAGA KIRISH</div>
+    <div class="form-group">
+      <label class="form-label">Parol</label>
+      <input type="password" class="form-input" id="join-room-password" placeholder="Xona paroli">
+    </div>
+    <button class="btn btn-primary mt-16" onclick="joinWithPassword()">Kirish</button>
+  </div>
+</div>
+
+<!-- Find by ID -->
+<div class="modal-overlay" id="find-id-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('find-id-modal')">✕</button>
+    <div class="modal-title">ID ORQALI QIDIRISH</div>
+    <div class="form-group">
+      <label class="form-label">Xona ID</label>
+      <input type="text" class="form-input" id="search-room-id-input" placeholder="Xona ID kiriting">
+    </div>
+    <button class="btn btn-primary" onclick="findRoomById()">Tekshirish</button>
+    <div id="find-room-result" class="id-search-result" style="display:none;"></div>
+    <button class="btn btn-ghost mt-16" id="find-join-btn" onclick="joinFoundRoom()" style="display:none;">Kirish</button>
+  </div>
+</div>
+
+<!-- Collections -->
+<div class="modal-overlay" id="collections-modal">
+  <div class="modal" style="max-width:480px;">
+    <button class="modal-close" onclick="closeModal('collections-modal')">✕</button>
+    <div class="modal-title">KOLLEKSIYALAR</div>
+    <div class="form-group">
+      <label class="form-label">Faol fon</label>
+      <div id="collections-grid-bg" class="collections-grid"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Avatar foni</label>
+      <div id="collections-grid-avatar" class="collections-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Profile -->
+<div class="modal-overlay" id="edit-profile-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('edit-profile-modal')">✕</button>
+    <div class="modal-title">PROFILNI TAHRIRLASH</div>
+    <div class="form-group">
+      <label class="form-label">Ism</label>
+      <input type="text" class="form-input" id="edit-name-input" placeholder="Ismingiz">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Yangi parol (bo'sh qoldiring = o'zgarmaydi)</label>
+      <input type="password" class="form-input" id="edit-pass-input" placeholder="Yangi parol">
+    </div>
+    <button class="btn btn-primary mt-16" onclick="saveProfile()">Saqlash</button>
+  </div>
+</div>
+
+<!-- Rules -->
+<div class="modal-overlay" id="rules-modal">
+  <div class="modal" style="max-width:500px;">
+    <button class="modal-close" onclick="closeModal('rules-modal')">✕</button>
+    <div class="modal-title">QOIDALAR</div>
+    <div class="rules-content">
+      <h3>📌 1. Umumiy</h3>
+      <p>O'yin 4 dan 30 gacha o'yinchi bilan o'ynaladi. Har bir o'yinchi o'yin boshlanishida tasodifiy rol oladi. O'yin kun va tun bosqichlari orqali davom etadi. Maqsad — o'z jamoang bilan g'alaba qozonish.</p>
+
+      <h3>🎭 2. Rollar — Mafiya tomoni 🤵</h3>
+      <p>🤵🏻 <b>Don</b> — Mafiya rahbari. Don boshqaradi. Komissarga o'xshab ko'rinadi (7+ o'yinchi).</p>
+      <p>🤵🏼 <b>Mafia</b> — Don bilan birgalikda har kecha bitta o'yinchini o'ldiradi.</p>
+      <p>👨‍💼 <b>Advokat</b> — Har kecha mafiyani himoya qiladi: Komissar uni taniy olmaydi (10+ o'yinchi).</p>
+
+      <h3>🎭 3. Rollar — Tinch aholi tomoni 👨🏼</h3>
+      <p>👨🏼 <b>Aholi</b> — Maxsus qobiliyatsiz, muhokamada mafiani topadi.</p>
+      <p>👨🏻‍⚕️ <b>Doktor</b> — Har kecha bitta odamni davolaydi. O'zini faqat 1 marta davolay oladi.</p>
+      <p>🕵🏻‍♂️ <b>Komissar Katani</b> — Har kecha tekshiradi. Birinchi tundan otish taqiqlanadi.</p>
+      <p>👮🏻‍♂️ <b>Serjant</b> — Komissarga yordam beradi. Komissar o'lsa, uning o'rnini egallaydi (8+ o'yinchi).</p>
+      <p>💃 <b>Kezuvchi</b> — Har kecha bir odamni bloklaydi (harakatini bekor qiladi). Komissar bilan bo'lmasligi kerak (10+ o'yinchi).</p>
+      <p>🧙‍♂️ <b>Daydi</b> — Tunda shisha uchun kimgadir boradi, qotillikka guvoh bo'lishi mumkin (14+ o'yinchi).</p>
+      <p>🧞‍♂️ <b>Afsungar</b> — Tunda o'ldirilsa, o'ldirganini ham o'zi bilan olib ketadi! Kunduz o'lsa, ovoz berganlardan birini tanlaydi (18+ o'yinchi).</p>
+      <p>🐺 <b>Bo'ri</b> — Ikki tomonlama: Don o'ldirsa Mafiaga, Komissar o'ldirsa Serjantga aylanadi, Qotil o'ldirsa o'ladi (22+ o'yinchi).</p>
+
+      <h3>🎭 4. Rollar — Mustaqil 🔪</h3>
+      <p>🔪 <b>Qotil</b> — Bir o'zi qolsagina g'olib bo'ladi. Har kecha bir odamni o'ldiradi (12+ o'yinchi).</p>
+
+      <h3>🌙 5. Tun bosqichi</h3>
+      <p>Chat cheklanadi. Har bir maxsus rol o'z harakatini bajaradi. Natijalar tun oxirida e'lon qilinadi.</p>
+      <h3>🌅 6. Kun bosqichi</h3>
+      <p>Kim o'ldirilgani e'lon qilinadi. O'yinchilar muhokama qiladi, kimdir mafiya deb shubhalaydi.</p>
+      <h3>🗳 7. Ovoz berish</h3>
+      <p>Kun oxirida barcha bitta odamga ovoz beradi. Eng ko'p ovoz olgan o'yindan chiqariladi, roli ochiladi.</p>
+      <h3>🏆 8. G'alaba shartlari</h3>
+      <p>🤵 <b>Mafiya</b> — mafiya soni qolgan o'yinchilar soniga teng yoki ko'p bo'lsa.</p>
+      <p>👨🏼 <b>Aholi</b> — barcha mafiya va qotil chiqarilsa.</p>
+      <p>🔪 <b>Qotil</b> — faqat o'zi tirik qolsa.</p>
+      <h3>⏱ 9. Vaqt</h3>
+      <p>Tun: 20 soniya | Kun muhokama: 30 soniya | Ovoz berish: 15 soniya</p>
+
+      <h3>📊 10. Rol taqsimoti (o'yinchi soni bo'yicha)</h3>
+      <p><b>4:</b> 1 Mafia · 1 Doktor · 2 Aholi</p>
+      <p><b>5:</b> 1 Mafia · 1 Doktor · 1 Komissar · 2 Aholi</p>
+      <p><b>6:</b> 2 Mafia · 1 Doktor · 1 Komissar · 2 Aholi</p>
+      <p><b>7:</b> 1 Don + 1 Mafia · 1 Doktor · 1 Komissar · 3 Aholi</p>
+      <p><b>8:</b> 1 Don + 1 Mafia · 1 Doktor · 1 Komissar · 1 Serjant · 3 Aholi</p>
+      <p><b>9:</b> 1 Don + 1 Mafia · 1 Doktor · 1 Komissar · 1 Serjant · 1 Kezuvchi · 3 Aholi</p>
+      <p><b>10:</b> 1 Don + 2 Mafia · 1 Doktor · 1 Komissar · 1 Serjant · 1 Kezuvchi · 3 Aholi</p>
+      <p><b>11:</b> 1 Don + 2 Mafia · 1 Doktor · 1 Komissar · 1 Serjant · 1 Kezuvchi · 1 Qotil · 3 Aholi</p>
+      <p><b>12:</b> 1 Don + 2 Mafia · 1 Advokat · 1 Doktor · 1 Komissar · 1 Serjant · 1 Kezuvchi · 1 Qotil · 3 Aholi</p>
+      <p><b>14:</b> 1 Don + 2 Mafia · 1 Advokat · 1 Doktor · 1 Komissar · 1 Serjant · 1 Kezuvchi · 1 Daydi · 1 Qotil · 4 Aholi</p>
+      <p><b>15-17:</b> 1 Don + 3 Mafia · 1 Advokat · 1 Doktor · 1 Komissar · 1 Serjant · 1 Kezuvchi · 1 Daydi · 1 Qotil · 4-6 Aholi</p>
+      <p><b>18-19:</b> 1 Don + 3 Mafia · 1 Advokat · 1 Doktor · 1 Komissar · 1 Serjant · 1 Kezuvchi · 1 Daydi · 1 Afsungar · 1 Qotil · 6-7 Aholi</p>
+      <p><b>20-21:</b> 1 Don + 4 Mafia · 1 Advokat · 1 Doktor · 1 Komissar · 1 Serjant · 1 Kezuvchi · 1 Daydi · 1 Afsungar · 1 Qotil · 7-8 Aholi</p>
+      <p><b>22+:</b> Barcha rollar + Bo'ri; mafia soni asta-sekin oshib boradi</p>
+    </div>
+  </div>
+</div>
+
+<!-- Add wallet (admin) -->
+<div class="modal-overlay" id="admin-add-wallet-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('admin-add-wallet-modal')">✕</button>
+    <div class="modal-title">HAMYON TO'LDIRISH</div>
+    <div class="form-group">
+      <label class="form-label">Telefon raqam</label>
+      <input type="tel" class="form-input" id="aw-phone" placeholder="+998...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Miqdor (so'm)</label>
+      <input type="number" class="form-input" id="aw-amount" placeholder="10000">
+    </div>
+    <button class="btn btn-gold mt-16" onclick="doAddWallet()">To'ldirish</button>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getDatabase, ref, set, get, push, onValue, onChildAdded,
+  update, remove, off, serverTimestamp, onDisconnect, runTransaction
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDMCE_WeQ8X53Kj2nVFO5BfuBrNqiIlreA",
+  authDomain: "mafia-fafd8.firebaseapp.com",
+  projectId: "mafia-fafd8",
+  storageBucket: "mafia-fafd8.firebasestorage.app",
+  messagingSenderId: "533331626558",
+  appId: "1:533331626558:web:eb47d03abbcf00fcfd1f6f",
+  measurementId: "G-5NHDNVQRKD"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ── CONSTANTS ───────────────────────────────
+const ADMIN_PHONE = '+998888551320';
+const ADMIN_PASS = '18092010';
+const EXP_PER_WIN = 30;
+const EXP_PER_LEVEL = 150;
+const MAX_LEVEL = 100;
+
+// ── VAQT SOZLAMALARI (sekundlarda) ───────────
+// Bu yerdan har bir bosqich vaqtini o'zgartirish mumkin
+const PHASE_DURATIONS = {
+  night:  25,   // Tun bosqichi (sekund)
+  day:    20,   // Kun bosqichi (sekund)
+  voting: 20,   // Ovoz berish bosqichi (sekund)
+};
+
+// ── STATE ────────────────────────────────────
+let currentUser = null; // { uid, phone, name, ... }
+let currentRoomId = null;
+let currentRoomData = null;
+let myRole = null;
+let gameListeners = [];
+let timerInterval = null;
+let _timerPhaseStart = 0;
+let _timerPhaseDur = 20;
+let pendingJoinRoomId = null;
+let pendingJoinRoomData = null;
+let gameEntered = false; // prevents duplicate enterGameScreen calls
+let _serverTimeOffset = 0; // Firebase server vaqti bilan mijoz farqi (ms)
+
+// Firebase server vaqt offsetini olish
+onValue(ref(db, '.info/serverTimeOffset'), snap => {
+  _serverTimeOffset = snap.val() || 0;
+});
+
+function serverNow() {
+  return Date.now() + _serverTimeOffset;
+}
+
+// ── HELPERS ──────────────────────────────────
+function phoneToKey(phone) {
+  return phone.replace(/\+/g, '').replace(/\s/g, '');
+}
+function toast(msg, type='info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+window.closeModal = closeModal;
+
+// ── AUTH TAB SWITCH ───────────────────────────
+window.switchAuthTab = function(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+  });
+  document.getElementById('login-form').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab==='register' ? 'block' : 'none';
+};
+
+// ── REGISTER ─────────────────────────────────
+window.register = async function() {
+  const name = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  if (!name || name.length < 2) return toast('Ism kamida 2 ta harf', 'error');
+  if (!/^\+998\d{9}$/.test(phone)) return toast("Telefon +998XXXXXXXXX formatida bo'lsin", 'error');
+  if (pass.length < 6) return toast('Parol kamida 6 ta belgi', 'error');
+  if (phone === ADMIN_PHONE) return toast("Bu raqam bilan ro'yxatdan o'tib bo'lmaydi!", 'error');
+
+  try {
+    const uid = phoneToKey(phone);
+    const snap = await get(ref(db, `users/${uid}`));
+    if (snap.exists()) return toast("Bu raqam allaqachon ro'yxatdan o'tgan! Iltimos kiring.", 'error');
+
+    const userData = {
+      name, phone, pass, uid,
+      level: 0, exp: 0, wallet: 0,
+      wins: 0, losses: 0,
+      collection: ['default_bg', 'default_avatar'],
+      activeBg: 'default_bg', activeAvatar: 'default_avatar',
+      createdAt: serverTimestamp()
+    };
+    await set(ref(db, `users/${uid}`), userData);
+    toast("Ro'yxatdan o'tildi! Endi kiring.", 'success');
+    document.getElementById('login-phone').value = phone;
+    document.getElementById('reg-name').value = '';
+    document.getElementById('reg-phone').value = '';
+    document.getElementById('reg-pass').value = '';
+    switchAuthTab('login');
+  } catch(e) {
+    toast('Xato: ' + e.message, 'error');
+  }
+};
+
+// ── LOGIN ─────────────────────────────────────
+window.login = async function() {
+  const phone = document.getElementById('login-phone').value.trim();
+  const pass = document.getElementById('login-pass').value;
+
+  if (!phone) return toast("Telefon raqam kiriting", 'error');
+  if (!pass) return toast("Parol kiriting", 'error');
+
+  // Admin check — BEFORE phone format validation
+  if (phone === ADMIN_PHONE && pass === ADMIN_PASS) {
+    try {
+      const allBgSnap = await get(ref(db, 'backgrounds'));
+      const allBgIds = ['default_bg', 'default_avatar'];
+      if (allBgSnap.exists()) allBgSnap.forEach(c => allBgIds.push(c.key));
+      // Admin saqlangan tanlovlarini yuklash
+      const adminStateSnap = await get(ref(db, 'adminState'));
+      const adminState = adminStateSnap.exists() ? adminStateSnap.val() : {};
+      currentUser = {
+        uid: 'admin', phone: ADMIN_PHONE, name: 'Admin', isAdmin: true,
+        level: 100, exp: 0, wallet: 999999999,
+        collection: allBgIds,
+        activeBg: adminState.activeBg || 'default_bg',
+        activeAvatar: adminState.activeAvatar || 'default_avatar'
+      };
+      enterMain();
+    } catch(e) {
+      toast("Firebase xatosi: " + e.message, 'error');
+    }
+    return;
+  }
+
+  if (!/^\+998\d{9}$/.test(phone)) return toast("Telefon +998XXXXXXXXX formatida bo'lsin", 'error');
+  try {
+    const uid = phoneToKey(phone);
+    const snap = await get(ref(db, `users/${uid}`));
+    if (!snap.exists()) return toast("Bu raqam topilmadi", 'error');
+    const user = snap.val();
+    if (user.pass !== pass) return toast("Parol noto'g'ri", 'error');
+    // Collection ni normalize qilib saqlash
+    const rawCol = user.collection;
+    user.collection = Array.isArray(rawCol) ? rawCol :
+      (rawCol && typeof rawCol === 'object' ? Object.values(rawCol) : ['default_bg', 'default_avatar']);
+    currentUser = { ...user };
+    listenUserUpdates(uid);
+    enterMain();
+  } catch(e) {
+    toast("Xato: " + e.message, 'error');
+  }
+};
+
+function listenUserUpdates(uid) {
+  onValue(ref(db, `users/${uid}`), snap => {
+    if (!snap.exists()) return;
+    const u = snap.val();
+    // Collection normalize: Firebase ba'zan {0:'id1',1:'id2'} qaytaradi
+    const rawCol = u.collection;
+    u.collection = Array.isArray(rawCol) ? rawCol :
+      (rawCol && typeof rawCol === 'object' ? Object.values(rawCol) : ['default_bg', 'default_avatar']);
+    currentUser = { ...currentUser, ...u };
+    updateProfileUI();
+  });
+}
+
+// ── SCREEN BACKGROUND ────────────────────────
+let _roomBgAnim = null;
+let _gameBgAnim = null;
+
+async function applyScreenBackground(screenId, bgElId, animRef) {
+  const bgEl = document.getElementById(bgElId);
+  if (!bgEl) return animRef;
+
+  if (animRef && animRef.cancel) { animRef.cancel(); animRef = null; }
+
+  // Ensure canvas
+  let canvas = bgEl.querySelector('canvas.screen-pattern-canvas');
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.className = 'screen-pattern-canvas';
+    canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+    bgEl.appendChild(canvas);
+  }
+
+  if (!currentUser || !currentUser.activeBg || currentUser.activeBg === 'default_bg') {
+    bgEl.style.background = '';
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return null;
+  }
+
+  const bgSnap = await get(ref(db, `backgrounds/${currentUser.activeBg}`));
+  if (!bgSnap.exists()) return null;
+  const bg = bgSnap.val();
+  bgEl.style.background = bg.color || '';
+  bgEl.style.opacity = '0.18';
+
+  const patternName = bg.pattern;
+  if (patternName && patternName !== 'none' && PATTERNS[patternName]) {
+    bgEl.style.opacity = '0.22';
+    return startPatternOnCanvas(canvas, patternName, {
+      color: bg.patternColor || '#ffffff',
+      opacity: (bg.patternOpacity !== undefined ? bg.patternOpacity : 0.3) * 0.6,
+      speed: bg.patternSpeed !== undefined ? bg.patternSpeed : 1,
+      size: bg.patternSize !== undefined ? bg.patternSize : 1
+    });
+  } else {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return null;
+  }
+}
+
+function enterMain() {
+  showScreen('main-screen');
+  document.getElementById('nav-admin').classList.add('hidden');
+  document.getElementById('tab-admin').classList.add('hidden');
+  if (currentUser.isAdmin) {
+    document.getElementById('nav-admin').classList.remove('hidden');
+    document.getElementById('tab-admin').classList.remove('hidden');
+    loadAdminBackgrounds(); // Admin kirishi bilanoq fonlar ro'yxatini yuklash
+    loadAdminRooms();       // Faol xonalar ro'yxatini ham yuklash
+  }
+  updateProfileUI();
+  listenPublicRooms();
+  listenPrivateRooms();
+  loadShop();
+  loadAdminUsers();
+}
+
+function updateProfileUI() {
+  if (!currentUser) return;
+  document.getElementById('profile-name-display').textContent = currentUser.name || '—';
+  document.getElementById('profile-phone-display').textContent = currentUser.phone || '—';
+  const initialEl = document.getElementById('profile-initial');
+  if (initialEl && currentUser.name) initialEl.textContent = currentUser.name[0].toUpperCase();
+
+  if (currentUser.isAdmin) {
+    document.getElementById('profile-level').textContent = '100';
+    document.getElementById('profile-wallet').textContent = '∞';
+    document.getElementById('profile-exp-bar').style.width = '100%';
+    document.getElementById('profile-exp-label').textContent = 'MAX DARAJA';
+  } else {
+    const level = currentUser.level || 0;
+    const exp = currentUser.exp || 0;
+    document.getElementById('profile-level').textContent = level;
+    document.getElementById('profile-wallet').textContent = currentUser.wallet || 0;
+    const expInLevel = exp % EXP_PER_LEVEL;
+    const pct = (expInLevel / EXP_PER_LEVEL) * 100;
+    document.getElementById('profile-exp-bar').style.width = pct + '%';
+    document.getElementById('profile-exp-label').textContent = `${expInLevel} / ${EXP_PER_LEVEL} EXP`;
+  }
+  applyUserBackground();
+}
+
+// ── PATTERN ENGINE ────────────────────────────
+const PATTERNS = {
+  none: null,
+  dots: drawDots,
+  grid: drawGrid,
+  hexagon: drawHexagon,
+  waves: drawWaves,
+  stars: drawStars,
+  rain: drawRain,
+  snow: drawSnow,
+  particles: drawParticles,
+  fire: drawFire,
+  matrix: drawMatrix,
+  pulse: drawPulse,
+  constellation: drawConstellation,
+  bubbles: drawBubbles,
+  lightning: drawLightning,
+  neon: drawNeon,
+  aurora: drawAurora,
+  galaxy: drawGalaxy,
+  hologram: drawHologram,
+  cyberpunk: drawCyberpunk,
+  vortex: drawVortex,
+  portal: drawPortal,
+  plasma: drawPlasma
+};
+
+function cancelPatternAnim(animRef) {
+  if (animRef && animRef.cancel) animRef.cancel();
+}
+
+function startPatternOnCanvas(canvas, patternName, opts = {}) {
+  if (!canvas) return null;
+  const ctx = canvas.getContext('2d');
+  const color = opts.color || '#ffffff';
+  const opacity = opts.opacity !== undefined ? opts.opacity : 0.3;
+  const speed = opts.speed !== undefined ? opts.speed : 1;
+  const size = opts.size !== undefined ? opts.size : 1;
+
+  let running = true;
+  let rafId;
+  let t = 0;
+  const TARGET_FPS = 30; // 30 FPS ga cheklab, CPU yengillashtirish
+  const FRAME_INTERVAL = 1000 / TARGET_FPS;
+  let lastTime = 0;
+
+  const fn = PATTERNS[patternName];
+  if (!fn) return { cancel: () => {} };
+
+  function resize() {
+    canvas.width = canvas.offsetWidth || 300;
+    canvas.height = canvas.offsetHeight || 120;
+  }
+  resize();
+  const ro = new ResizeObserver(resize);
+  ro.observe(canvas.parentElement || canvas);
+
+  function loop(timestamp) {
+    if (!running) return;
+    const elapsed = timestamp - lastTime;
+    if (elapsed >= FRAME_INTERVAL) {
+      t += (elapsed / 1000) * speed;
+      lastTime = timestamp - (elapsed % FRAME_INTERVAL);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      fn(ctx, canvas.width, canvas.height, t, color, opacity, size);
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+  rafId = requestAnimationFrame(loop);
+
+  return {
+    cancel: () => {
+      running = false;
+      cancelAnimationFrame(rafId);
+      ro.disconnect();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  };
+}
+
+// ── PATTERN DRAW FUNCTIONS ────────────────────
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+function drawDots(ctx, w, h, t, color, opacity, size) {
+  const spacing = 24 * size;
+  const r = 2 * size;
+  ctx.fillStyle = `rgba(${hexToRgb(color)},${opacity})`;
+  for (let x = spacing/2; x < w; x += spacing) {
+    for (let y = spacing/2; y < h; y += spacing) {
+      const wave = Math.sin(t + x * 0.05 + y * 0.05) * 0.5 + 0.5;
+      ctx.globalAlpha = opacity * (0.4 + wave * 0.6);
+      ctx.beginPath();
+      ctx.arc(x, y, r * (0.7 + wave * 0.5), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawGrid(ctx, w, h, t, color, opacity, size) {
+  const spacing = 28 * size;
+  ctx.strokeStyle = `rgba(${hexToRgb(color)},${opacity})`;
+  ctx.lineWidth = 0.5;
+  const offset = (t * 8) % spacing;
+  for (let x = -spacing + offset; x < w + spacing; x += spacing) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+  for (let y = -spacing + offset; y < h + spacing; y += spacing) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+}
+
+function drawHexagon(ctx, w, h, t, color, opacity, size) {
+  const s = 18 * size;
+  const hex_h = s * Math.sqrt(3);
+  ctx.strokeStyle = `rgba(${hexToRgb(color)},${opacity})`;
+  ctx.lineWidth = 0.8;
+  const offset = (t * 5) % (hex_h);
+  for (let row = -1; row < h / (hex_h) + 2; row++) {
+    for (let col = -1; col < w / (s * 1.5) + 2; col++) {
+      const cx = col * s * 3 + (row % 2) * s * 1.5;
+      const cy = row * hex_h - offset;
+      const pulse = Math.sin(t + col * 0.3 + row * 0.5) * 0.3 + 0.7;
+      ctx.globalAlpha = opacity * pulse;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i;
+        const px = cx + s * Math.cos(angle);
+        const py = cy + s * Math.sin(angle);
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath(); ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawWaves(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const numWaves = Math.floor(4 * size);
+  for (let i = 0; i < numWaves; i++) {
+    const yBase = (h / numWaves) * i + h / (numWaves * 2);
+    const amp = 12 * size;
+    const freq = 0.02 / size;
+    ctx.strokeStyle = `rgba(${rgb},${opacity * (0.4 + (i / numWaves) * 0.6)})`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let x = 0; x <= w; x += 2) {
+      const y = yBase + Math.sin(x * freq + t + i) * amp;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawStars(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  // Static star positions (seeded)
+  if (!drawStars._stars || drawStars._w !== w) {
+    drawStars._stars = Array.from({length: Math.floor(60 * size)}, (_, i) => ({
+      x: (Math.sin(i * 13.7) * 0.5 + 0.5) * w,
+      y: (Math.sin(i * 7.3) * 0.5 + 0.5) * h,
+      r: 0.5 + (Math.sin(i * 3.1) * 0.5 + 0.5) * 2 * size,
+      phase: i * 0.7
+    }));
+    drawStars._w = w;
+  }
+  drawStars._stars.forEach(s => {
+    const twinkle = Math.sin(t * 2 + s.phase) * 0.5 + 0.5;
+    ctx.fillStyle = `rgba(${rgb},${opacity * (0.3 + twinkle * 0.7)})`;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r * (0.7 + twinkle * 0.4), 0, Math.PI * 2);
+    ctx.fill();
+    // Shooting star occasionally
+    if (Math.sin(t * 0.3 + s.phase * 0.1) > 0.98) {
+      const len = 20 * size;
+      ctx.strokeStyle = `rgba(${rgb},${opacity * 0.5})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(s.x + len, s.y + len * 0.3);
+      ctx.stroke();
+    }
+  });
+}
+
+function drawRain(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const drops = Math.floor(60 * size);
+  for (let i = 0; i < drops; i++) {
+    const x = ((Math.sin(i * 17.3) * 0.5 + 0.5) * w + t * 20 * (1 + i * 0.01)) % (w + 10);
+    const y = ((Math.sin(i * 5.7) * 0.5 + 0.5) * h + t * 80 * (0.5 + i * 0.02)) % (h + 20);
+    const len = (4 + i % 8) * size;
+    ctx.strokeStyle = `rgba(${rgb},${opacity * (0.3 + (i % 5) * 0.14)})`;
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - len * 0.15, y + len);
+    ctx.stroke();
+  }
+}
+
+function drawSnow(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const flakes = Math.floor(50 * size);
+  for (let i = 0; i < flakes; i++) {
+    const speed = 0.4 + (i % 5) * 0.2;
+    const x = ((Math.sin(i * 12.1) * 0.5 + 0.5) * w + Math.sin(t + i) * 15) % w;
+    const y = ((Math.sin(i * 6.3) * 0.5 + 0.5) * h + t * 20 * speed) % (h + 10);
+    const r = (1 + i % 3) * 0.6 * size;
+    ctx.fillStyle = `rgba(${rgb},${opacity * (0.4 + (i % 3) * 0.2)})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawParticles(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  if (!drawParticles._p || drawParticles._w !== w) {
+    drawParticles._p = Array.from({length: Math.floor(40 * size)}, (_, i) => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
+      r: 1 + Math.random() * 2 * size, phase: Math.random() * Math.PI * 2
+    }));
+    drawParticles._w = w;
+  }
+  const pts = drawParticles._p;
+  pts.forEach((p, i) => {
+    p.x = (p.x + p.vx + Math.sin(t * 0.5 + p.phase) * 0.3 + w) % w;
+    p.y = (p.y + p.vy + Math.cos(t * 0.4 + p.phase) * 0.3 + h) % h;
+    ctx.fillStyle = `rgba(${rgb},${opacity * (0.4 + Math.sin(t + p.phase) * 0.3)})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+    // Connect nearby particles
+    for (let j = i + 1; j < Math.min(i + 6, pts.length); j++) {
+      const dx = pts[j].x - p.x, dy = pts[j].y - p.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 60 * size) {
+        ctx.strokeStyle = `rgba(${rgb},${opacity * (1 - dist / (60 * size)) * 0.4})`;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
+      }
+    }
+  });
+}
+
+function drawFire(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const cols = Math.floor(w / (8 * size));
+  for (let i = 0; i < cols; i++) {
+    const x = (i / cols) * w + (8 * size) / 2;
+    const flameH = (0.3 + Math.abs(Math.sin(t * 1.5 + i * 0.5)) * 0.5) * h * 0.7;
+    const flameW = 3 * size + Math.sin(t * 2 + i) * size;
+    const grad = ctx.createLinearGradient(x, h, x, h - flameH);
+    grad.addColorStop(0, `rgba(${rgb},${opacity})`);
+    grad.addColorStop(0.6, `rgba(${rgb},${opacity * 0.4})`);
+    grad.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.ellipse(x, h, flameW, flameH, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawMatrix(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const charW = 10 * size;
+  const cols = Math.floor(w / charW);
+  if (!drawMatrix._drops) drawMatrix._drops = Array.from({length: cols}, () => Math.random() * -50);
+  const drops = drawMatrix._drops;
+  const chars = '01アイウエオカキクケコ';
+  ctx.font = `${10 * size}px monospace`;
+  for (let i = 0; i < Math.min(cols, drops.length); i++) {
+    const char = chars[Math.floor(Math.random() * chars.length)];
+    const x = i * charW;
+    const y = drops[i] * charW;
+    ctx.fillStyle = `rgba(${rgb},${opacity})`;
+    ctx.fillText(char, x, y);
+    // Trail
+    ctx.fillStyle = `rgba(${rgb},${opacity * 0.15})`;
+    ctx.fillText(char, x, y - charW);
+    if (y > h + charW && Math.random() > 0.975) drops[i] = 0;
+    drops[i] += 0.08;
+  }
+}
+
+function drawPulse(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const cx = w / 2, cy = h / 2;
+  const maxR = Math.max(w, h) * 0.7;
+  const rings = Math.floor(5 * size);
+  for (let i = 0; i < rings; i++) {
+    const phase = (t * 0.5 + (i / rings)) % 1;
+    const r = phase * maxR;
+    const a = opacity * (1 - phase) * 0.8;
+    ctx.strokeStyle = `rgba(${rgb},${a})`;
+    ctx.lineWidth = 2 * size * (1 - phase * 0.5);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+function drawConstellation(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  if (!drawConstellation._pts || drawConstellation._w !== w) {
+    drawConstellation._pts = Array.from({length: Math.floor(20 * size)}, (_, i) => ({
+      x: (Math.sin(i * 9.3) * 0.5 + 0.5) * w,
+      y: (Math.sin(i * 6.1) * 0.5 + 0.5) * h,
+      vx: (Math.sin(i * 2.1) - 0.5) * 0.3,
+      vy: (Math.sin(i * 3.7) - 0.5) * 0.3,
+      r: 1.5 + (i % 3) * 0.5
+    }));
+    drawConstellation._w = w;
+  }
+  const pts = drawConstellation._pts;
+  pts.forEach(p => {
+    p.x = (p.x + p.vx * size + w) % w;
+    p.y = (p.y + p.vy * size + h) % h;
+  });
+  for (let i = 0; i < pts.length; i++) {
+    for (let j = i + 1; j < pts.length; j++) {
+      const dx = pts[j].x - pts[i].x, dy = pts[j].y - pts[i].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const maxDist = 80 * size;
+      if (dist < maxDist) {
+        ctx.strokeStyle = `rgba(${rgb},${opacity * (1 - dist / maxDist) * 0.6})`;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
+      }
+    }
+    ctx.fillStyle = `rgba(${rgb},${opacity})`;
+    ctx.beginPath(); ctx.arc(pts[i].x, pts[i].y, pts[i].r * size, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+function drawBubbles(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const count = Math.floor(15 * size);
+  for (let i = 0; i < count; i++) {
+    const speed = 0.3 + (i % 5) * 0.15;
+    const x = (Math.sin(i * 11.3) * 0.5 + 0.5) * w + Math.sin(t * 0.5 + i) * 15;
+    const y = h - ((t * 30 * speed + i * (h / count)) % (h + 40));
+    const r = (6 + i % 8) * size;
+    const a = opacity * (0.2 + Math.sin(t + i) * 0.1 + 0.1);
+    ctx.strokeStyle = `rgba(${rgb},${a})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+    // Shine
+    ctx.fillStyle = `rgba(${rgb},${a * 0.3})`;
+    ctx.beginPath(); ctx.arc(x - r * 0.3, y - r * 0.3, r * 0.2, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+function drawLightning(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const bolts = 5;
+  // 8 directions: top, bottom, left, right, and 4 corners
+  const directions = [
+    { sx: ()=>Math.random()*w, sy: ()=>0,    ex: ()=>Math.random()*w, ey: ()=>h },
+    { sx: ()=>Math.random()*w, sy: ()=>h,    ex: ()=>Math.random()*w, ey: ()=>0 },
+    { sx: ()=>0,               sy: ()=>Math.random()*h, ex: ()=>w, ey: ()=>Math.random()*h },
+    { sx: ()=>w,               sy: ()=>Math.random()*h, ex: ()=>0, ey: ()=>Math.random()*h },
+    { sx: ()=>0,               sy: ()=>0,    ex: ()=>w, ey: ()=>h },
+    { sx: ()=>w,               sy: ()=>0,    ex: ()=>0, ey: ()=>h },
+    { sx: ()=>w/2,             sy: ()=>0,    ex: ()=>Math.random()*w, ey: ()=>h },
+    { sx: ()=>0,               sy: ()=>h/2,  ex: ()=>w, ey: ()=>Math.random()*h },
+  ];
+  for (let b = 0; b < bolts; b++) {
+    const flash = Math.sin(t * 3.5 + b * 2.1 + Math.floor(t * 0.5) * 3.7);
+    if (flash < 0.6) continue;
+    const alpha = Math.min(1, (flash - 0.6) / 0.4);
+    const dir = directions[Math.floor((Math.sin(b * 5.1 + Math.floor(t * 0.7)) * 0.5 + 0.5) * directions.length) % directions.length];
+    const sx = dir.sx(), sy = dir.sy(), ex = dir.ex(), ey = dir.ey();
+    ctx.strokeStyle = `rgba(${rgb},${opacity * alpha})`;
+    ctx.lineWidth = 2 * size * alpha;
+    ctx.shadowBlur = 14 * size;
+    ctx.shadowColor = `rgba(${rgb},${alpha * 0.8})`;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    let cx = sx, cy = sy;
+    const segs = 10;
+    const dx = (ex - sx) / segs, dy = (ey - sy) / segs;
+    for (let s = 0; s < segs; s++) {
+      cx += dx + (Math.sin(b * 3.1 + s * 2.7 + t * 2) * 35 * size);
+      cy += dy + (Math.cos(b * 2.3 + s * 1.9 + t * 1.5) * 25 * size);
+      ctx.lineTo(Math.max(-10, Math.min(w+10, cx)), Math.max(-10, Math.min(h+10, cy)));
+    }
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+    // Branch lightning
+    if (alpha > 0.7) {
+      ctx.lineWidth = 0.8 * size * alpha;
+      ctx.strokeStyle = `rgba(${rgb},${opacity * alpha * 0.5})`;
+      const bx = sx + (ex - sx) * 0.4 + (Math.sin(b * 4.7) * 30 * size);
+      const by = sy + (ey - sy) * 0.4 + (Math.cos(b * 3.2) * 30 * size);
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + (Math.sin(b*7.3+t)*60*size), by + (Math.cos(b*5.1+t)*60*size));
+      ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+  }
+}
+
+// ── NEW MODERN EFFECTS ─────────────────────────
+
+function drawNeon(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const lines = Math.floor(6 * size);
+  for (let i = 0; i < lines; i++) {
+    const y = (h / lines) * i + h / (lines * 2);
+    const pulse = Math.sin(t * 1.5 + i * 0.8) * 0.5 + 0.5;
+    const glow = opacity * (0.3 + pulse * 0.7);
+    ctx.shadowBlur = 20 * size * pulse;
+    ctx.shadowColor = `rgba(${rgb},${glow})`;
+    ctx.strokeStyle = `rgba(${rgb},${glow})`;
+    ctx.lineWidth = 1.5 * size;
+    ctx.beginPath();
+    for (let x = 0; x <= w; x += 3) {
+      const wy = y + Math.sin(x * 0.015 + t + i) * 20 * size + Math.sin(x * 0.04 + t * 2) * 8 * size;
+      x === 0 ? ctx.moveTo(x, wy) : ctx.lineTo(x, wy);
+    }
+    ctx.stroke();
+  }
+  ctx.shadowBlur = 0;
+}
+
+function drawAurora(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const bands = Math.floor(5 * size);
+  for (let i = 0; i < bands; i++) {
+    const yBase = (h * 0.1) + (h * 0.6 / bands) * i;
+    const bandH = h * 0.25 * size;
+    const shift = Math.sin(t * 0.4 + i * 0.7) * w * 0.15;
+    const grad = ctx.createLinearGradient(0, yBase - bandH/2, 0, yBase + bandH/2);
+    const a = opacity * (0.2 + Math.sin(t * 0.8 + i) * 0.15 + 0.15);
+    grad.addColorStop(0, `rgba(${rgb},0)`);
+    grad.addColorStop(0.5, `rgba(${rgb},${a})`);
+    grad.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, yBase);
+    for (let x = 0; x <= w; x += 4) {
+      const y = yBase + Math.sin(x * 0.008 + t * 0.6 + i) * 40 * size + shift * Math.sin(x * 0.002 + t * 0.3);
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(w, yBase + bandH);
+    ctx.lineTo(0, yBase + bandH);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function drawGalaxy(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  if (!drawGalaxy._stars || drawGalaxy._w !== w) {
+    drawGalaxy._stars = Array.from({length: Math.floor(80 * size)}, (_, i) => ({
+      x: (Math.sin(i * 17.3) * 0.5 + 0.5) * w,
+      y: (Math.cos(i * 11.7) * 0.5 + 0.5) * h,
+      r: 0.3 + (Math.sin(i * 5.2) * 0.5 + 0.5) * 2.5 * size,
+      speed: 0.3 + (i % 7) * 0.2,
+      twinkle: Math.random() * Math.PI * 2
+    }));
+    drawGalaxy._w = w;
+  }
+  // Galaxy center
+  const cx = w * 0.5, cy = h * 0.5;
+  const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(w,h)*0.4);
+  grd.addColorStop(0, `rgba(${rgb},${opacity * 0.3})`);
+  grd.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, w, h);
+  // Stars
+  for (const s of drawGalaxy._stars) {
+    const twink = Math.sin(t * s.speed * 2 + s.twinkle) * 0.5 + 0.5;
+    const a = opacity * (0.4 + twink * 0.6);
+    // Star glow
+    ctx.shadowBlur = s.r * 6 * twink;
+    ctx.shadowColor = `rgba(${rgb},${a * 0.5})`;
+    ctx.fillStyle = `rgba(${rgb},${a})`;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r * (0.7 + twink * 0.6), 0, Math.PI*2);
+    ctx.fill();
+    // Shooting star
+    if (twink > 0.9 && s.r > 1.5) {
+      ctx.strokeStyle = `rgba(${rgb},${a * 0.4})`;
+      ctx.lineWidth = 0.5;
+      ctx.shadowBlur = 3;
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(s.x - 20 * size * twink, s.y - 6 * size * twink);
+      ctx.stroke();
+    }
+  }
+  ctx.shadowBlur = 0;
+}
+
+function drawHologram(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  // Scan lines
+  const scanY = (t * 40 * size) % (h + 20) - 10;
+  const grad = ctx.createLinearGradient(0, scanY - 15, 0, scanY + 15);
+  grad.addColorStop(0, `rgba(${rgb},0)`);
+  grad.addColorStop(0.5, `rgba(${rgb},${opacity * 0.8})`);
+  grad.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, scanY - 15, w, 30);
+  // Grid overlay
+  const gridS = 20 * size;
+  ctx.strokeStyle = `rgba(${rgb},${opacity * 0.15})`;
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < w; x += gridS) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+  for (let y = 0; y < h; y += gridS) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+  // Glitch lines
+  if (Math.sin(t * 7.3) > 0.8) {
+    const gy = Math.random() * h;
+    const gw = 20 + Math.random() * 80;
+    ctx.fillStyle = `rgba(${rgb},${opacity * 0.6})`;
+    ctx.fillRect(Math.random() * (w - gw), gy, gw, 1 + Math.random() * 3);
+  }
+  // Corner decorations
+  const cSize = 15 * size;
+  ctx.strokeStyle = `rgba(${rgb},${opacity * 0.8})`;
+  ctx.lineWidth = 1.5 * size;
+  [[0,0],[w,0],[0,h],[w,h]].forEach(([cx,cy],i) => {
+    const sx = cx === 0 ? 1 : -1, sy = cy === 0 ? 1 : -1;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + sy * cSize);
+    ctx.lineTo(cx, cy); ctx.lineTo(cx + sx * cSize, cy);
+    ctx.stroke();
+  });
+}
+
+function drawCyberpunk(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  // Vertical scanlines
+  const spacing = 6 * size;
+  ctx.strokeStyle = `rgba(${rgb},${opacity * 0.1})`;
+  ctx.lineWidth = 1;
+  for (let x = 0; x < w; x += spacing) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+  // Glowing diagonal slashes
+  const slashes = Math.floor(4 * size);
+  for (let i = 0; i < slashes; i++) {
+    const pulse = Math.sin(t * 2 + i * 1.5) * 0.5 + 0.5;
+    const xpos = ((i / slashes) * w + t * 20 * (i%2 === 0 ? 1 : -1)) % w;
+    ctx.shadowBlur = 10 * size * pulse;
+    ctx.shadowColor = `rgba(${rgb},${pulse * 0.6})`;
+    ctx.strokeStyle = `rgba(${rgb},${opacity * pulse})`;
+    ctx.lineWidth = 1.5 * size;
+    ctx.beginPath();
+    ctx.moveTo(xpos, 0); ctx.lineTo(xpos + 40 * size, h); ctx.stroke();
+  }
+  // Data flow dots
+  const dotCount = Math.floor(20 * size);
+  for (let i = 0; i < dotCount; i++) {
+    const x = (Math.sin(i * 13.1) * 0.5 + 0.5) * w;
+    const y = (t * 25 * (0.5 + (i % 5) * 0.2) + i * (h / dotCount)) % h;
+    const a = opacity * (Math.sin(t * 3 + i) * 0.3 + 0.5);
+    ctx.fillStyle = `rgba(${rgb},${a})`;
+    ctx.shadowBlur = 6 * size;
+    ctx.shadowColor = `rgba(${rgb},${a})`;
+    ctx.fillRect(x, y, 2 * size, 2 * size);
+  }
+  ctx.shadowBlur = 0;
+}
+
+function drawVortex(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const cx = w / 2, cy = h / 2;
+  const rings = Math.floor(8 * size);
+  const maxR = Math.sqrt(cx*cx + cy*cy);
+  for (let i = 0; i < rings; i++) {
+    const r = (maxR / rings) * (i + 1);
+    const angle = t * (1 + i * 0.15) + (i * Math.PI * 0.25);
+    const pulse = Math.sin(t * 2 + i * 0.5) * 0.3 + 0.7;
+    ctx.strokeStyle = `rgba(${rgb},${opacity * pulse * (1 - i / rings * 0.7)})`;
+    ctx.lineWidth = (1 + (rings - i) * 0.2) * size;
+    ctx.shadowBlur = 8 * pulse;
+    ctx.shadowColor = `rgba(${rgb},${opacity * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, angle, angle + Math.PI * 1.5);
+    ctx.stroke();
+  }
+  ctx.shadowBlur = 0;
+}
+
+function drawPortal(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const cx = w / 2, cy = h / 2;
+  const maxR = Math.min(w, h) * 0.45;
+  const rings = Math.floor(12 * size);
+  for (let i = rings; i >= 0; i--) {
+    const r = (maxR / rings) * (i + 1);
+    const rot = t * (i % 2 === 0 ? 1.2 : -0.9) * (1 + i * 0.05);
+    const a = opacity * (0.15 + (1 - i / rings) * 0.4) * (Math.sin(t * 3 + i) * 0.2 + 0.8);
+    const grd = ctx.createRadialGradient(cx, cy, r * 0.7, cx, cy, r);
+    grd.addColorStop(0, `rgba(${rgb},0)`);
+    grd.addColorStop(0.5, `rgba(${rgb},${a})`);
+    grd.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.strokeStyle = grd;
+    ctx.lineWidth = 2 * size;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, rot, rot + Math.PI * (0.8 + Math.sin(t + i) * 0.2));
+    ctx.stroke();
+  }
+  // Center glow
+  const cGrd = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 0.3);
+  cGrd.addColorStop(0, `rgba(${rgb},${opacity * 0.5})`);
+  cGrd.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.fillStyle = cGrd;
+  ctx.beginPath(); ctx.arc(cx, cy, maxR * 0.3, 0, Math.PI*2); ctx.fill();
+}
+
+function drawPlasma(ctx, w, h, t, color, opacity, size) {
+  const rgb = hexToRgb(color);
+  const cellW = Math.max(4, Math.floor(w / (20 * size)));
+  const cellH = Math.max(4, Math.floor(h / (12 * size)));
+  for (let x = 0; x <= w; x += cellW) {
+    for (let y = 0; y <= h; y += cellH) {
+      const v1 = Math.sin(x * 0.05 + t);
+      const v2 = Math.sin(y * 0.04 + t * 0.8);
+      const v3 = Math.sin((x + y) * 0.03 + t * 1.2);
+      const v4 = Math.sin(Math.sqrt((x - w/2)**2 + (y - h/2)**2) * 0.04 + t);
+      const val = (v1 + v2 + v3 + v4) / 4;
+      const a = opacity * (val * 0.4 + 0.1);
+      if (a > 0.02) {
+        ctx.fillStyle = `rgba(${rgb},${Math.max(0, a)})`;
+        ctx.fillRect(x, y, cellW, cellH);
+      }
+    }
+  }
+}
+
+// ── SELECTED PATTERN STATE (admin) ────────────
+let _selectedPattern = 'none';
+let _previewAnim = null;
+
+window.selectPattern = function(name) {
+  _selectedPattern = name;
+  document.querySelectorAll('.pattern-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.pattern === name);
+  });
+  document.getElementById('admin-bg-pattern').value = name;
+  updateAdminPreview();
+};
+
+function updateAdminPreview() {
+  const prev = document.getElementById('bg-preview');
+  const canvas = document.getElementById('bg-preview-canvas');
+  // Color
+  let color = '';
+  if (colorMode === 'solid') {
+    color = document.getElementById('solid-color-hex').value.trim() || document.getElementById('solid-color-picker').value;
+  } else {
+    color = buildGradientValue();
+    document.getElementById('gradient-result-input').value = color;
+  }
+  document.getElementById('admin-bg-color').value = color;
+  prev.style.background = color;
+
+  // Pattern opts
+  const pColor = document.getElementById('pattern-color').value;
+  const pOpacity = parseFloat(document.getElementById('pattern-opacity').value);
+  const pSpeed = parseFloat(document.getElementById('pattern-speed').value);
+  const pSize = parseFloat(document.getElementById('pattern-size').value);
+  document.getElementById('admin-bg-pattern-color').value = pColor;
+  document.getElementById('admin-bg-pattern-opacity').value = pOpacity;
+  document.getElementById('admin-bg-pattern-speed').value = pSpeed;
+  document.getElementById('admin-bg-pattern-size').value = pSize;
+
+  if (_previewAnim) { _previewAnim.cancel(); _previewAnim = null; }
+  if (_selectedPattern !== 'none' && canvas) {
+    _previewAnim = startPatternOnCanvas(canvas, _selectedPattern, {
+      color: pColor, opacity: pOpacity, speed: pSpeed, size: pSize
+    });
+  } else if (canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+let _profileBgPatternAnim = null;
+let _profileAvPatternAnim = null;
+
+async function applyUserBackground() {
+  if (_profileBgPatternAnim) { _profileBgPatternAnim.cancel(); _profileBgPatternAnim = null; }
+  if (_profileAvPatternAnim) { _profileAvPatternAnim.cancel(); _profileAvPatternAnim = null; }
+  if (!currentUser) return;
+
+  // Boshlang'ich harf
+  const initialEl = document.getElementById('profile-initial');
+  if (initialEl && currentUser.name) initialEl.textContent = currentUser.name[0].toUpperCase();
+
+  // ── AVATAR (chap kichik doira karta) ─────────────
+  const avEl = document.getElementById('profile-bg-el');       // doira karta ichidagi bg div
+  const avCanvas = document.getElementById('profile-avatar-canvas');
+
+  if (!currentUser.activeAvatar || currentUser.activeAvatar === 'default_avatar') {
+    if (avEl) avEl.style.background = 'linear-gradient(135deg, #c8392b 0%, #1a0505 60%, #0a0a1a 100%)';
+    if (avCanvas) avCanvas.getContext('2d').clearRect(0, 0, avCanvas.width, avCanvas.height);
+  } else {
+    const avSnap = await get(ref(db, `backgrounds/${currentUser.activeAvatar}`));
+    if (avSnap.exists()) {
+      const av = avSnap.val();
+      if (avEl) avEl.style.background = av.color || '#1a1a24';
+      if (avCanvas) {
+        if (av.pattern && av.pattern !== 'none' && PATTERNS[av.pattern]) {
+          _profileAvPatternAnim = startPatternOnCanvas(avCanvas, av.pattern, {
+            color: av.patternColor || '#ffffff',
+            opacity: av.patternOpacity !== undefined ? av.patternOpacity : 0.3,
+            speed: av.patternSpeed !== undefined ? av.patternSpeed : 1,
+            size: av.patternSize !== undefined ? av.patternSize : 1
+          });
+        } else {
+          avCanvas.getContext('2d').clearRect(0, 0, avCanvas.width, avCanvas.height);
+        }
+      }
+    }
+  }
+
+  // ── ORQA FON (hero background, katta joy) ────────
+  const heroBgEl = document.getElementById('profile-hero-bg-el');
+  const heroBgCanvas = document.getElementById('profile-hero-bg-canvas');
+
+  if (!currentUser.activeBg || currentUser.activeBg === 'default_bg') {
+    if (heroBgEl) heroBgEl.style.background = 'var(--surface)';
+    if (heroBgCanvas) heroBgCanvas.getContext('2d').clearRect(0, 0, heroBgCanvas.width, heroBgCanvas.height);
+  } else {
+    const bgSnap = await get(ref(db, `backgrounds/${currentUser.activeBg}`));
+    if (bgSnap.exists()) {
+      const bg = bgSnap.val();
+      if (heroBgEl) heroBgEl.style.background = bg.color || 'var(--surface)';
+      if (heroBgCanvas) {
+        if (bg.pattern && bg.pattern !== 'none' && PATTERNS[bg.pattern]) {
+          _profileBgPatternAnim = startPatternOnCanvas(heroBgCanvas, bg.pattern, {
+            color: bg.patternColor || '#ffffff',
+            opacity: bg.patternOpacity !== undefined ? bg.patternOpacity : 0.3,
+            speed: bg.patternSpeed !== undefined ? bg.patternSpeed : 1,
+            size: bg.patternSize !== undefined ? bg.patternSize : 1
+          });
+        } else {
+          heroBgCanvas.getContext('2d').clearRect(0, 0, heroBgCanvas.width, heroBgCanvas.height);
+        }
+      }
+    }
+  }
+}
+
+// ── TAB SWITCH ────────────────────────────────
+window.switchTab = function(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const tabEl = document.getElementById(`tab-${tab}`);
+  // Admin tabni faqat admin foydalanuvchi uchun ko'rsatish
+  if (tab === 'admin' && !currentUser?.isAdmin) return;
+  if (tabEl) tabEl.classList.add('active');
+  const navEl = document.getElementById(`nav-${tab}`);
+  if (navEl) navEl.classList.add('active');
+};
+
+// ── SHARED ROOMS LISTENER (bitta listener, debounce bilan) ──────────────────
+let _roomsDebounceTimer = null;
+let _roomsListenerActive = false;
+function listenPublicRooms() { _startSharedRoomsListener(); }
+function listenPrivateRooms() { _startSharedRoomsListener(); }
+function _startSharedRoomsListener() {
+  if (_roomsListenerActive) return;
+  _roomsListenerActive = true;
+  onValue(ref(db, 'rooms'), snap => {
+    if (_roomsDebounceTimer) clearTimeout(_roomsDebounceTimer);
+    _roomsDebounceTimer = setTimeout(() => {
+      const publicContainer = document.getElementById('public-rooms-list');
+      const privateContainer = document.getElementById('private-rooms-list');
+      const publicRooms = [], privateRooms = [];
+      if (snap.exists()) {
+        snap.forEach(child => {
+          const r = child.val();
+          r._id = child.key;
+          if (r.status !== 'waiting') return;
+          if (r.type === 'public') publicRooms.push(r);
+          else if (r.type === 'private') privateRooms.push(r);
+        });
+      }
+      if (publicContainer) {
+        publicContainer.innerHTML = publicRooms.length
+          ? publicRooms.map(r => `
+            <div class="room-card" onclick="joinRoom('${r._id}')">
+              <div>
+                <div class="room-name">${escHtml(r.name)}</div>
+                <div class="room-meta">${Object.keys(r.players||{}).length} / ${r.maxPlayers} o'yinchi · ${r.hostName || ''}</div>
+              </div>
+              <span class="room-badge badge-public">OCHIQ</span>
+            </div>`).join('')
+          : `<div class="empty-state"><div class="empty-icon">🃏</div><div>Hozirda ochiq xona yo'q</div></div>`;
+      }
+      if (privateContainer) {
+        privateContainer.innerHTML = privateRooms.length
+          ? privateRooms.map(r => `
+            <div class="room-card private" onclick="joinRoom('${r._id}')">
+              <div>
+                <div class="room-name">${escHtml(r.name)}</div>
+                <div class="room-meta">${Object.keys(r.players||{}).length} / ${r.maxPlayers} · 🔒 Parolli</div>
+              </div>
+              <span class="room-badge badge-private">SHAXSIY</span>
+            </div>`).join('')
+          : `<div class="empty-state"><div class="empty-icon">🔐</div><div>Shaxsiy xona topilmadi</div></div>`;
+      }
+    }, 300);
+  });
+}
+
+// ── CREATE ROOM ───────────────────────────────
+window.openCreateRoomModal = () => openModal('create-room-modal');
+window.toggleRoomPassword = function() {
+  const t = document.getElementById('new-room-type').value;
+  document.getElementById('room-password-group').style.display = t==='private' ? 'block' : 'none';
+};
+
+window.createRoom = async function() {
+  const name = document.getElementById('new-room-name').value.trim();
+  const type = document.getElementById('new-room-type').value;
+  const pass = document.getElementById('new-room-password').value;
+  const maxP = parseInt(document.getElementById('new-room-max').value) || 8;
+  if (!name) return toast('Xona nomi kiriting', 'error');
+  if (type === 'private' && !pass) return toast('Parol kiriting', 'error');
+  if (maxP < 4 || maxP > 30) return toast('4 dan 30 gacha bo\'lishi kerak', 'error');
+
+  const roomRef = push(ref(db, 'rooms'));
+  const roomData = {
+    id: roomRef.key,
+    name, type, maxPlayers: maxP,
+    password: type === 'private' ? pass : '',
+    hostUid: currentUser.uid,
+    hostName: currentUser.name,
+    status: 'waiting',
+    players: {},
+    createdAt: serverTimestamp()
+  };
+  roomData.players[currentUser.uid] = {
+    uid: currentUser.uid, name: currentUser.name, isHost: true,
+    activeBg: currentUser.activeBg || 'default_bg',
+    activeAvatar: currentUser.activeAvatar || 'default_avatar'
+  };
+  await set(roomRef, roomData);
+  closeModal('create-room-modal');
+  enterRoom(roomRef.key, roomData);
+};
+
+// ── JOIN ROOM ─────────────────────────────────
+window.joinRoom = async function(roomId) {
+  const snap = await get(ref(db, `rooms/${roomId}`));
+  if (!snap.exists()) return toast("Xona topilmadi", 'error');
+  const room = snap.val();
+  if (room.status === 'playing') return toast("O'yin allaqachon boshlangan", 'error');
+  const players = room.players || {};
+  if (Object.keys(players).length >= room.maxPlayers) return toast("Xona to'lgan", 'error');
+  if (players[currentUser.uid]) {
+    // Already in room
+    enterRoom(roomId, room);
+    return;
+  }
+  if (room.type === 'private') {
+    pendingJoinRoomId = roomId;
+    pendingJoinRoomData = room;
+    openModal('join-private-modal');
+    return;
+  }
+  await doJoinRoom(roomId);
+};
+
+window.joinWithPassword = async function() {
+  const pass = document.getElementById('join-room-password').value;
+  if (pass !== pendingJoinRoomData.password) return toast("Parol noto'g'ri", 'error');
+  closeModal('join-private-modal');
+  await doJoinRoom(pendingJoinRoomId);
+};
+
+async function doJoinRoom(roomId) {
+  await update(ref(db, `rooms/${roomId}/players/${currentUser.uid}`), {
+    uid: currentUser.uid, name: currentUser.name, isHost: false,
+    activeBg: currentUser.activeBg || 'default_bg',
+    activeAvatar: currentUser.activeAvatar || 'default_avatar'
+  });
+  const snap = await get(ref(db, `rooms/${roomId}`));
+  enterRoom(roomId, snap.val());
+}
+
+// ── ENTER ROOM (waiting lobby) ────────────────
+function enterRoom(roomId, roomData) {
+  currentRoomId = roomId;
+  currentRoomData = roomData;
+  showScreen('room-screen');
+  document.getElementById('room-screen-name').textContent = roomData.name;
+  document.getElementById('room-screen-id').textContent = 'ID: ' + roomId;
+
+  // Parolni ko'rsatish (faqat xona egasi yoki ichida bo'lganlar uchun)
+  const passEl = document.getElementById('room-screen-password');
+  if (roomData.password && roomData.type === 'private') {
+    passEl.style.display = 'inline-block';
+    passEl.textContent = '🔑 ' + roomData.password;
+  } else {
+    passEl.style.display = 'none';
+  }
+
+  // Eski chat xabarlarini tozalash (avvalgi xona xabarlari ko'rinmasin)
+  document.getElementById('waiting-chat-messages').innerHTML = '';
+  document.getElementById('waiting-chat-input').value = '';
+
+  applyScreenBackground('room-screen', 'room-screen-bg', _roomBgAnim).then(anim => { _roomBgAnim = anim; });
+
+  // Disconnect cleanup
+  onDisconnect(ref(db, `rooms/${roomId}/players/${currentUser.uid}`)).remove();
+
+  // Agar bu o'yinchi host bo'lsa, saytdan chiqilganda xonani o'chir
+  if (roomData.hostUid === currentUser.uid) {
+    onDisconnect(ref(db, `rooms/${roomId}`)).remove();
+  }
+
+  // Listen for room changes
+  const roomListener = onValue(ref(db, `rooms/${roomId}`), snap => {
+    if (!snap.exists()) {
+      toast("Xona tarqatildi", 'info');
+      leaveRoomCleanup();
+      return;
+    }
+    const room = snap.val();
+    currentRoomData = room;
+    renderWaitingRoom(room, roomId);
+    if (room.status === 'playing' && room.gameState && !gameEntered) {
+      gameEntered = true;
+      enterGameScreen(room);
+    }
+  });
+  gameListeners.push({ ref: ref(db, `rooms/${roomId}`), listener: roomListener });
+
+  // Listen waiting chat
+  const chatListener = onChildAdded(ref(db, `rooms/${roomId}/waitingChat`), snap => {
+    const msg = snap.val();
+    const container = document.getElementById('waiting-chat-messages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg';
+    div.innerHTML = `<span class="chat-msg-name">${escHtml(msg.name)}</span><span class="chat-msg-text">${escHtml(msg.text)}</span>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  });
+  gameListeners.push({ ref: ref(db, `rooms/${roomId}/waitingChat`), listener: chatListener });
+}
+
+function renderWaitingRoom(room, roomId) {
+  const players = Object.values(room.players || {});
+  const grid = document.getElementById('room-players-grid');
+  const slots = [];
+  for (let i = 0; i < room.maxPlayers; i++) {
+    const p = players[i];
+    if (p) {
+      // Orqa fon (activeBg) va avatar (activeAvatar) ma'lumotlari
+      const bgStyle = p.activeBg && p.activeBg !== 'default_bg' ? `data-bgid="${p.activeBg}"` : '';
+      const avStyle = p.activeAvatar && p.activeAvatar !== 'default_avatar' ? `data-avid="${p.activeAvatar}"` : '';
+      slots.push(`
+        <div class="player-slot" id="pslot_${p.uid || i}">
+          ${p.isHost ? '<span class="player-host-badge">👑</span>' : ''}
+          <div class="player-slot-bg" id="pslot_bg_${p.uid || i}" ${bgStyle} style="background:var(--surface3);"><div class="player-slot-bg-overlay"></div></div>
+          <div class="player-avatar" id="pslot_av_${p.uid || i}">${p.name[0].toUpperCase()}</div>
+          <div class="player-slot-info">
+            <div class="player-slot-name">${escHtml(p.name)}</div>
+            <div class="player-ready-dot"></div>
+          </div>
+        </div>`);
+    } else {
+      slots.push(`<div class="player-slot empty">
+        <div class="player-slot-bg"><div class="player-slot-bg-overlay"></div></div>
+        <div class="player-avatar" style="opacity:.3;">?</div>
+        <div class="player-slot-info"><div class="player-slot-name" style="opacity:.3;">Bo'sh</div></div>
+      </div>`);
+    }
+  }
+  grid.innerHTML = slots.join('');
+  // Orqa fonlarni async yuklash
+  loadPlayerSlotBgs(players);
+
+  const status = document.getElementById('waiting-status');
+  const needed = room.maxPlayers >= 4 ? 4 : room.maxPlayers;
+  // Build role preview for current player count
+  const pc = players.length;
+  const previewRoles = assignRoles(Array.from({length: Math.max(pc, 4)}, (_, i) => ({uid: i})));
+  const roleCounts = {};
+  previewRoles.forEach(r => { roleCounts[r] = (roleCounts[r] || 0) + 1; });
+  const roleOrder = ['don','mafia','lawyer','killer','warlock','wolf','detective','sergeant','escort','vagrant','doctor','civilian'];
+  const roleLabels = { don:'🤵🏻Don', mafia:'🤵🏼Mafia', lawyer:'👨‍💼Advokat', killer:'🔪Qotil', warlock:'🧞Afsungar', wolf:"🐺Bo'ri", detective:'🕵️Komissar', sergeant:'👮Serjant', escort:'💃Kezuvchi', vagrant:'🧙Daydi', doctor:'👨‍⚕️Doktor', civilian:'👨Aholi' };
+  const rolePreview = roleOrder.filter(r => roleCounts[r]).map(r => `${roleLabels[r]}×${roleCounts[r]}`).join(' · ');
+  status.innerHTML = `<div>${pc} / ${room.maxPlayers} o'yinchi (kamida 4 ta kerak)</div><div style="margin-top:6px;font-size:10px;color:var(--text3);">📋 Rollar: ${rolePreview}</div>`;
+
+  const startBtn = document.getElementById('start-btn');
+  if (room.hostUid === currentUser.uid && players.length >= 4) {
+    startBtn.style.display = 'inline-flex';
+  } else {
+    startBtn.style.display = 'none';
+  }
+}
+
+// Xona ekranidagi har bir o'yinchining orqa fonini async yuklaydi
+async function loadPlayerSlotBgs(players) {
+  for (const p of players) {
+    if (!p || !p.uid) continue;
+    const bgEl = document.getElementById(`pslot_bg_${p.uid}`);
+    if (!bgEl) continue;
+
+    // Orqa fon (to'rtburchak background)
+    if (p.activeBg && p.activeBg !== 'default_bg') {
+      try {
+        const bgSnap = await get(ref(db, `backgrounds/${p.activeBg}`));
+        if (bgSnap.exists()) {
+          const bg = bgSnap.val();
+          bgEl.style.background = bg.color || 'var(--surface3)';
+          // Pattern effekti
+          if (bg.pattern && bg.pattern !== 'none' && PATTERNS[bg.pattern]) {
+            let cv = bgEl.querySelector('.player-slot-bg-canvas');
+            if (!cv) {
+              cv = document.createElement('canvas');
+              cv.className = 'player-slot-bg-canvas';
+              bgEl.insertBefore(cv, bgEl.firstChild);
+            }
+            startPatternOnCanvas(cv, bg.pattern, {
+              color: bg.patternColor || '#ffffff',
+              opacity: (bg.patternOpacity || 0.3) * 0.7,
+              speed: bg.patternSpeed || 1,
+              size: (bg.patternSize || 1) * 0.6
+            });
+          }
+        }
+      } catch(e) {}
+    }
+
+    // Avatar (yumaloq doira) — avatar fonini qo'llash
+    if (p.activeAvatar && p.activeAvatar !== 'default_avatar') {
+      try {
+        const avSnap = await get(ref(db, `backgrounds/${p.activeAvatar}`));
+        const avEl = document.getElementById(`pslot_av_${p.uid}`);
+        if (avSnap.exists() && avEl) {
+          const av = avSnap.val();
+          avEl.style.background = av.color || 'var(--surface2)';
+        }
+      } catch(e) {}
+    }
+  }
+}
+
+window.leaveRoom = async function() {
+  if (!currentRoomId) return;
+  const snap = await get(ref(db, `rooms/${currentRoomId}`));
+  if (snap.exists()) {
+    const room = snap.val();
+    const players = room.players || {};
+    if (room.hostUid === currentUser.uid) {
+      // Host leaves → delete room
+      await remove(ref(db, `rooms/${currentRoomId}`));
+    } else {
+      await remove(ref(db, `rooms/${currentRoomId}/players/${currentUser.uid}`));
+    }
+  }
+  leaveRoomCleanup();
+};
+
+function leaveRoomCleanup() {
+  gameListeners.forEach(l => { try { l.listener(); } catch(e) {} });
+  gameListeners = [];
+  clearInterval(timerInterval);
+  timerInterval = null;
+  window._timerPhase  = null;
+  window._timerRound  = null;
+  window._advanceLock = false;
+  _timerPhaseStart = 0;
+  _timerPhaseDur   = 20;
+  if (_roomBgAnim) { _roomBgAnim.cancel(); _roomBgAnim = null; }
+  if (_gameBgAnim) { _gameBgAnim.cancel(); _gameBgAnim = null; }
+  currentRoomId = null; currentRoomData = null; myRole = null;
+  gameEntered = false;
+  showScreen('main-screen');
+}
+
+window.copyRoomId = function() {
+  navigator.clipboard.writeText(currentRoomId).then(() => {
+    toast('✅ Xona ID nusxalandi!', 'success');
+    const badge = document.getElementById('room-screen-id');
+    const orig = badge.textContent;
+    badge.textContent = '✓ Nusxalandi!';
+    badge.style.color = 'var(--green)';
+    setTimeout(() => {
+      badge.textContent = orig;
+      badge.style.color = '';
+    }, 1500);
+  }).catch(() => {
+    // Fallback for browsers without clipboard API
+    const el = document.createElement('textarea');
+    el.value = currentRoomId;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    toast('✅ Xona ID nusxalandi!', 'success');
+  });
+};
+
+window.sendWaitingChat = async function() {
+  const inp = document.getElementById('waiting-chat-input');
+  const text = inp.value.trim();
+  if (!text || !currentRoomId) return;
+  await push(ref(db, `rooms/${currentRoomId}/waitingChat`), {
+    uid: currentUser.uid, name: currentUser.name, text, ts: serverTimestamp()
+  });
+  inp.value = '';
+};
+
+// ── START GAME ────────────────────────────────
+window.startGame = async function() {
+  const snap = await get(ref(db, `rooms/${currentRoomId}`));
+  if (!snap.exists()) return;
+  const room = snap.val();
+  const players = Object.values(room.players || {});
+  if (players.length < 4) return toast("Kamida 4 o'yinchi kerak", 'error');
+
+  const roles = assignRoles(players);
+  const gameState = {
+    phase: 'night',
+    round: 1,
+    phaseStart: { '.sv': 'timestamp' },
+    phaseDuration: PHASE_DURATIONS.night,
+    players: {},
+    votes: {},
+    nightActions: {},
+    log: [],
+  };
+  players.forEach((p, i) => {
+    gameState.players[p.uid] = {
+      uid: p.uid, name: p.name, role: roles[i],
+      alive: true, protected: false,
+      activeBg: p.activeBg || 'default_bg',
+      activeAvatar: p.activeAvatar || 'default_avatar'
+    };
+  });
+  gameState.log.push(`O'yin boshlandi! ${players.length} o'yinchi. Tun 1.`);
+
+  await update(ref(db, `rooms/${currentRoomId}`), {
+    status: 'playing',
+    gameState,
+    dayChat: null,
+    mafiaChat: null
+  });
+};
+
+function assignRoles(players) {
+  const count = players.length;
+  const roles = [];
+
+  // ════════════════════════════════════════════════════════
+  //  AQLLI ROL TAQSIMOTI — balans va mantiq asosida
+  //
+  //  Asosiy prinsiplar:
+  //  1. Mafia : Aholi nisbati taxminan 1:3 bo'lishi kerak
+  //  2. Maxsus rollar asta-sekin qo'shiladi
+  //  3. Har bir yangi rolni "qarshi kuch" bilan balanslash
+  //  4. Kichik o'yinlarda sodda, kattalarida murakkab
+  //
+  //  TAQSIMOT JADVALI:
+  //   4:  1 Mafia | 1 Doktor | 2 Aholi
+  //   5:  1 Mafia | 1 Doktor | 1 Komissar | 2 Aholi
+  //   6:  2 Mafia | 1 Doktor | 1 Komissar | 2 Aholi
+  //   7:  1 Don + 1 Mafia | 1 Doktor | 1 Komissar | 3 Aholi
+  //   8:  1 Don + 1 Mafia | 1 Doktor | 1 Komissar | 1 Serjant | 3 Aholi
+  //   9:  1 Don + 1 Mafia | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 3 Aholi
+  //  10:  1 Don + 2 Mafia | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 3 Aholi
+  //  11:  1 Don + 2 Mafia | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 1 Qotil | 3 Aholi
+  //  12:  1 Don + 2 Mafia | 1 Advokat | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 1 Qotil | 3 Aholi
+  //  13:  1 Don + 2 Mafia | 1 Advokat | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 1 Qotil | 4 Aholi
+  //  14:  1 Don + 2 Mafia | 1 Advokat | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 1 Daydi | 1 Qotil | 4 Aholi
+  //  15:  1 Don + 3 Mafia | 1 Advokat | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 1 Daydi | 1 Qotil | 4 Aholi
+  //  16:  1 Don + 3 Mafia | 1 Advokat | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 1 Daydi | 1 Qotil | 5 Aholi
+  //  17:  1 Don + 3 Mafia | 1 Advokat | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 1 Daydi | 1 Qotil | 6 Aholi
+  //  18:  1 Don + 3 Mafia | 1 Advokat | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 1 Daydi | 1 Afsungar | 1 Qotil | 6 Aholi
+  //  19:  1 Don + 3 Mafia | 1 Advokat | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 1 Daydi | 1 Afsungar | 1 Qotil | 7 Aholi
+  //  20:  1 Don + 4 Mafia | 1 Advokat | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 1 Daydi | 1 Afsungar | 1 Qotil | 7 Aholi
+  //  21:  1 Don + 4 Mafia | 1 Advokat | 1 Doktor | 1 Komissar | 1 Serjant | 1 Kezuvchi | 1 Daydi | 1 Afsungar | 1 Qotil | 8 Aholi
+  //  22+: Yuqoridagilarga + Bo'ri; har 5 qo'shimcha o'yinchi uchun +1 Mafia, qolgan aholi
+  // ════════════════════════════════════════════════════════
+
+  // ── 1. MAFIA TOMONI ───────────────────────────
+  //  4-5:   Don yo'q, 1 oddiy Mafia
+  //  6:     Don yo'q, 2 Mafia (yoki 1 don + 0 mafia → balans uchun 2 mafia yaxshiroq)
+  //  7-11:  1 Don + 1 Mafia
+  //  12-14: 1 Don + 2 Mafia + 1 Advokat
+  //  15-17: 1 Don + 3 Mafia + 1 Advokat
+  //  18-21: 1 Don + 3 Mafia + 1 Advokat
+  //  22-25: 1 Don + 4 Mafia + 1 Advokat
+  //  26+:   1 Don + 5 Mafia + 1 Advokat
+
+  let hasDon    = count >= 7;
+  let hasLawyer = count >= 12;
+  let mafiaCount;   // oddiy "mafia" roli soni (donsiz)
+
+  if      (count <= 5)  mafiaCount = 1;
+  else if (count <= 6)  mafiaCount = 2;   // Don yo'q, 2 Mafia
+  else if (count <= 11) mafiaCount = 1;   // 1 Don + 1 Mafia
+  else if (count <= 14) mafiaCount = 2;   // 1 Don + 2 Mafia
+  else if (count <= 21) mafiaCount = 3;   // 1 Don + 3 Mafia
+  else if (count <= 25) mafiaCount = 4;   // 1 Don + 4 Mafia
+  else                  mafiaCount = 5;   // 1 Don + 5 Mafia
+
+  if (hasDon)    roles.push('don');
+  for (let i = 0; i < mafiaCount; i++) roles.push('mafia');
+  if (hasLawyer) roles.push('lawyer');
+
+  // ── 2. TINCH AHOLI MAXSUS ROLLARI ────────────
+  //  Doktor: 4+  — asosiy himoyachi, hamma o'yinda bo'ladi
+  //  Komissar: 5+ — tergovchi, doktorsiz mantiqsiz
+  //  Serjant: 8+  — komissarning yordamchisi
+  //  Kezuvchi: 9+ — mafiaga qarshi bloklash
+  //  Daydi: 14+   — kuzatuvchi, tasodifiy rol
+  //  Afsungar: 18+ — qasos roli, katta o'yinlarda
+  //  Bo'ri: 22+   — ikki taraflama rol, eng katta o'yinlar
+
+  if (count >= 4)  roles.push('doctor');
+  if (count >= 5)  roles.push('detective');  // komissar
+  if (count >= 8)  roles.push('sergeant');
+  if (count >= 9)  roles.push('escort');     // kezuvchi
+  if (count >= 14) roles.push('vagrant');    // daydi
+  if (count >= 18) roles.push('warlock');    // afsungar
+  if (count >= 22) roles.push('wolf');       // bo'ri
+
+  // ── 3. MUSTAQIL ROL ───────────────────────────
+  //  Qotil: 11+ — qo'shimcha tahdid, o'rtacha-katta o'yinlarda
+  if (count >= 11) roles.push('killer');
+
+  // ── 4. QOLGANLARINI TINCH AHOLI BILAN TO'LDIRISH ──
+  while (roles.length < count) roles.push('civilian');
+
+  // ── 5. FISHER-YATES SHUFFLE ───────────────────
+  for (let i = roles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [roles[i], roles[j]] = [roles[j], roles[i]];
+  }
+  return roles;
+}
+
+// ── GAME SCREEN ───────────────────────────────
+function enterGameScreen(room) {
+  // Eski game listenerlarini tozalash (ko'p xona / qayta kirish muammosini oldini olish)
+  gameListeners.forEach(l => { try { l.listener(); } catch(e) {} });
+  gameListeners = [];
+  clearInterval(timerInterval);
+  timerInterval = null;
+  window._timerPhase  = null;
+  window._timerRound  = null;
+  window._advanceLock = false;
+
+  showScreen('game-screen');
+  applyScreenBackground('game-screen', 'game-screen-bg', _gameBgAnim).then(anim => { _gameBgAnim = anim; });
+  // Clear old chat messages from DOM
+  document.getElementById('mafia-chat-messages').innerHTML = '';
+  document.getElementById('day-chat-messages').innerHTML = '';
+  // Always hide mafia chat until role confirmed
+  document.getElementById('mafia-chat-section').classList.add('hidden');
+
+  const gs = room.gameState;
+  myRole = gs.players[currentUser.uid]?.role || 'spectator';
+  renderGameScreen(gs);
+
+  // O'yin vaqtida saytdan chiqib ketilsa:
+  // - Oddiy o'yinchi: alive=false (o'lik) qilinadi
+  // - Host: xona butunlay o'chiriladi
+  if (room.hostUid === currentUser.uid) {
+    onDisconnect(ref(db, `rooms/${currentRoomId}`)).remove();
+  } else {
+    // alive:false qilib belgilash — o'yinchilar uni o'ldi deb bilishadi
+    onDisconnect(ref(db, `rooms/${currentRoomId}/gameState/players/${currentUser.uid}/alive`)).set(false);
+    // players ro'yxatidan ham o'chirish
+    onDisconnect(ref(db, `rooms/${currentRoomId}/players/${currentUser.uid}`)).remove();
+  }
+
+  // Setup mafia chat visibility
+  if (['mafia','don','lawyer'].includes(myRole)) {
+    document.getElementById('mafia-chat-section').classList.remove('hidden');
+    const mafiaListener = onChildAdded(ref(db, `rooms/${currentRoomId}/mafiaChat`), snap => {
+      const msg = snap.val();
+      appendChatMsg('mafia-chat-messages', msg.name, msg.text);
+    });
+    gameListeners.push({ ref: ref(db, `rooms/${currentRoomId}/mafiaChat`), listener: mafiaListener });
+  }
+
+  // Day chat
+  const dayChatListener = onChildAdded(ref(db, `rooms/${currentRoomId}/dayChat`), snap => {
+    const msg = snap.val();
+    appendChatMsg('day-chat-messages', msg.name, msg.text);
+  });
+  gameListeners.push({ ref: ref(db, `rooms/${currentRoomId}/dayChat`), listener: dayChatListener });
+
+  // Game state listener
+  const gsListener = onValue(ref(db, `rooms/${currentRoomId}/gameState`), snap => {
+    if (!snap.exists()) return;
+    const gs = snap.val();
+    renderGameScreen(gs);
+    checkGameOver(gs);
+    // O'yinchi disconnect bo'lganda ham g'olibni tekshirish (faqat host)
+    if (gs.phase !== 'ended' && currentRoomData?.hostUid === currentUser.uid) {
+      const winner = checkWinner(gs);
+      if (winner) {
+        endGame(gs, winner);
+      }
+    }
+  });
+  gameListeners.push({ ref: ref(db, `rooms/${currentRoomId}/gameState`), listener: gsListener });
+
+  // Xona o'chirilganda (host disconnect yoki o'yin tugaganda) game screen dan chiqish
+  const gameRoomListener = onValue(ref(db, `rooms/${currentRoomId}`), snap => {
+    if (!snap.exists()) {
+      // Xona yo'q — asosiy ekranga qaytish
+      document.getElementById('game-over-screen').classList.remove('show');
+      toast("🚪 Xona tarqatildi — host o'yindan chiqdi", 'info');
+      leaveRoomCleanup();
+    }
+  });
+  gameListeners.push({ ref: ref(db, `rooms/${currentRoomId}`), listener: gameRoomListener });
+}
+
+function appendChatMsg(containerId, name, text) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'chat-msg';
+  div.innerHTML = `<span class="chat-msg-name">${escHtml(name)}</span><span class="chat-msg-text">${escHtml(text)}</span>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function renderGameScreen(gs) {
+  if (!gs) return;
+  const me = gs.players[currentUser.uid];
+  if (!me) return;
+
+  // Phase
+  const isNight = gs.phase === 'night';
+  const isVoting = gs.phase === 'voting';
+  document.getElementById('phase-icon').textContent = isNight ? '🌙' : isVoting ? '🗳️' : '☀️';
+  document.getElementById('phase-name').textContent = isNight ? 'TUN' : isVoting ? 'OVOZ BERISH' : 'KUN';
+  document.getElementById('phase-sub').textContent = isNight ? 'Mafia harakatda...' : isVoting ? 'Kim chiqarilsin?' : 'Muhokama';
+
+  // Timer — modul-darajadagi o'zgaruvchilar orqali boshqariladi (closure muammosi yo'q)
+  const timerPhase = gs.phase;
+  const timerRound = gs.round;
+
+  // phaseStart va phaseDuration ni modul o'zgaruvchilariga yozamiz
+  // setInterval shu o'zgaruvchilarni o'qiydi — yangi bosqich kelganda avtomatik to'g'ri bo'ladi
+  _timerPhaseStart = gs.phaseStart || serverNow();
+  _timerPhaseDur   = gs.phaseDuration || 20;
+
+  const elapsed   = Math.floor((serverNow() - _timerPhaseStart) / 1000);
+  const remaining = Math.max(0, _timerPhaseDur - elapsed);
+  document.getElementById('timer-el').textContent = remaining;
+
+  // Faqat yangi phase/round da intervalini qayta boshlash
+  if (timerInterval && window._timerPhase === timerPhase && window._timerRound === timerRound) {
+    // Bir xil bosqich — interval ishlayapti, hech narsa qilmaslik
+  } else {
+    clearInterval(timerInterval);
+    window._timerPhase  = timerPhase;
+    window._timerRound  = timerRound;
+    window._advanceLock = false;
+
+    timerInterval = setInterval(() => {
+      // Har 500ms da modul o'zgaruvchilaridan o'qiymiz — closure yo'q, har doim yangi qiymat
+      const _elapsed    = Math.floor((serverNow() - _timerPhaseStart) / 1000);
+      const _remaining  = Math.max(0, _timerPhaseDur - _elapsed);
+      document.getElementById('timer-el').textContent = _remaining;
+
+      if (_remaining <= 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        // Faqat host phase'ni oldinga siljitadi, bir martagina
+        if (!window._advanceLock && currentRoomData && currentRoomData.hostUid === currentUser.uid) {
+          window._advanceLock = true;
+          get(ref(db, `rooms/${currentRoomId}/gameState`)).then(snap => {
+            if (!snap.exists()) return;
+            const freshGs = snap.val();
+            if (freshGs.phase === timerPhase && freshGs.round === timerRound) {
+              advancePhase(freshGs);
+            }
+          });
+        }
+      }
+    }, 500);
+  }
+
+  // My role
+  const roleData = getRoleData(me.role);
+  const banner = document.getElementById('my-role-banner');
+  banner.className = `my-role-banner role-${me.role || 'civilian'}`;
+  document.getElementById('my-role-icon').textContent = roleData.icon;
+  document.getElementById('my-role-name').textContent = roleData.label;
+  document.getElementById('my-role-desc').textContent = roleData.desc + (me.alive ? '' : ' — ☠️ Eliminatsiya qilindingiz');
+  if (!me.alive) banner.style.opacity = '.5';
+
+  // Log
+  const logEl = document.getElementById('game-log');
+  logEl.innerHTML = (gs.log || []).slice(-10).reverse().map(l =>
+    `<div class="log-entry">${escHtml(l)}</div>`).join('');
+
+  // Players list
+  renderGamePlayers(gs);
+
+  // Actions
+  renderGameActions(gs, me);
+}
+
+function getRoleData(role) {
+  const r = {
+    don:      { icon:'🤵🏻', label:'DON',        team:'mafia',   desc:"Mafiya rahbari. Don boshqaradi. Komissarga o'xshab ko'rinadi." },
+    mafia:    { icon:'🤵🏼', label:'MAFIA',      team:'mafia',   desc:"Har kechasi bitta o'yinchini o'ldirasiz." },
+    lawyer:   { icon:'👨‍💼', label:'ADVOKAT',  team:'mafia',   desc:"Mafiyani himoya qilasiz: Komissar uni taniy olmaydi." },
+    civilian: { icon:'👨🏼', label:'AHOLI',      team:'civil',   desc:"Mafiyani toping va ovozda ularni osing." },
+    doctor:   { icon:'👨🏻‍⚕️', label:'DOKTOR',  team:'civil',   desc:"Har kechasi bitta odamni davolaysiz. O'zini 1 marta davolay oladi." },
+    detective:{ icon:'🕵🏻‍♂️', label:'KOMISSAR', team:'civil',  desc:"Har kechasi tekshirasiz. Birinchi tundan otish taqiqlanadi." },
+    sergeant: { icon:'👮🏻‍♂️', label:'SERJANT',  team:'civil',  desc:"Komissarga yordam beradi. Komissar o'lsa, o'rnini egallaydi." },
+    escort:   { icon:'💃', label:'KEZUVCHI',     team:'civil',   desc:"Tunda bitta odamni zararsizlantiradi (harakatini bloklaydi). Komissar bilan bo'lmasligi kerak." },
+    vagrant:  { icon:'🧙‍♂️', label:'DAYDI',    team:'civil',   desc:"Tunda shisha uchun kimgadir boradi va guvoh bo'lishi mumkin." },
+    warlock:  { icon:'🧞‍♂️', label:'AFSUNGAR', team:'civil',   desc:"Tunda o'ldirilsa, o'ldirganini o'zi bilan olib ketadi! Kunduz o'lsa, o'zi birini tanlaydi." },
+    wolf:     { icon:'🐺', label:"BO'RI",        team:'neutral', desc:"Komissar o'ldirsa Serjant, Don o'ldirsa Mafia, Qotil o'ldirsa o'ladi." },
+    killer:   { icon:'🔪', label:'QOTIL',        team:'solo',    desc:"Bir o'zi qolsagina g'olib. Atrofdagilarni o'ldiradi." },
+  };
+  return r[role] || { icon:'❓', label: role || '?', desc:'', team:'civil' };
+}
+function renderGamePlayers(gs) {
+  const container = document.getElementById('game-players-list');
+  const players = Object.values(gs.players || {});
+  const isNight = gs.phase === 'night';
+  const isVoting = gs.phase === 'voting';
+  const me = gs.players[currentUser.uid];
+  const na = gs.nightActions || {};
+
+  // Navbat ko'rsatkichi (game-actions ichida chiqadi)
+  const actEl = document.getElementById('game-actions');
+  if (actEl && isNight && me?.alive) {
+    const myRole_ = me.role;
+    let myPick = null;
+    if (['mafia','don'].includes(myRole_)) myPick = na.kill;
+    else if (myRole_ === 'doctor')    myPick = na.heal;
+    else if (myRole_ === 'detective') myPick = na.check;
+    else if (myRole_ === 'lawyer')    myPick = na.protect;
+    else if (myRole_ === 'escort')    myPick = na.block;
+    else if (myRole_ === 'killer')    myPick = na.killsolo;
+
+    let turnLine = '';
+    const pickedName = myPick ? (gs.players[myPick]?.name || '?') : null;
+    if (['mafia','don'].includes(myRole_)) {
+      turnLine = myPick
+        ? `<span style="color:var(--accent);">🤵 Tanlov: <b>${escHtml(pickedName)}</b> — o'ldirish (o'zgartirish mumkin)</span>`
+        : `<span style="color:var(--accent);">🤵 <b>Sizning navbatingiz</b> — o'ldirish uchun tanlang</span>`;
+    } else if (myRole_ === 'doctor') {
+      turnLine = myPick
+        ? `<span style="color:var(--blue);">👨‍⚕️ Tanlov: <b>${escHtml(pickedName)}</b> — davolash (o'zgartirish mumkin)</span>`
+        : `<span style="color:var(--blue);">👨‍⚕️ <b>Sizning navbatingiz</b> — davolash uchun tanlang</span>`;
+    } else if (myRole_ === 'detective') {
+      turnLine = myPick
+        ? `<span style="color:var(--detective);">🕵️ Tanlov: <b>${escHtml(pickedName)}</b> — tekshirish (o'zgartirish mumkin)</span>`
+        : `<span style="color:var(--detective);">🕵️ <b>Sizning navbatingiz</b> — tekshirish uchun tanlang</span>`;
+    } else if (myRole_ === 'sergeant') {
+      turnLine = `<span style="color:#3498db;">👮 Komissar harakatini kuting — siz qo'riqchisiz</span>`;
+    } else if (myRole_ === 'lawyer') {
+      turnLine = myPick
+        ? `<span style="color:var(--gold);">👨‍💼 Tanlov: <b>${escHtml(pickedName)}</b> — himoya (o'zgartirish mumkin)</span>`
+        : `<span style="color:var(--gold);">👨‍💼 <b>Sizning navbatingiz</b> — mafiyani himoya qiling</span>`;
+    } else if (myRole_ === 'escort') {
+      turnLine = myPick
+        ? `<span style="color:#e91e8c;">💃 Tanlov: <b>${escHtml(pickedName)}</b> — bloklash (o'zgartirish mumkin)</span>`
+        : `<span style="color:#e91e8c;">💃 <b>Sizning navbatingiz</b> — bir odamni bloklang</span>`;
+    } else if (myRole_ === 'vagrant') {
+      turnLine = `<span style="color:var(--text2);">🧙 Siz kuzatuvchisiz — kimgadir boring va nima bo'lishini koring</span>`;
+    } else if (myRole_ === 'warlock') {
+      turnLine = `<span style="color:#9c27b0;">🧞 Afsungar — agar o'ldirilsangiz, sizni o'ldirganini ham olib ketasiz!</span>`;
+    } else if (myRole_ === 'wolf') {
+      turnLine = `<span style="color:#795548;">🐺 Bo'ri — reenkarnatsiyani kutyapsiz...</span>`;
+    } else if (myRole_ === 'killer') {
+      turnLine = myPick
+        ? `<span style="color:#f44336;">🔪 Tanlov: <b>${escHtml(pickedName)}</b> — o'ldirish (o'zgartirish mumkin)</span>`
+        : `<span style="color:#f44336;">🔪 <b>Sizning navbatingiz</b> — bir odamni o'ldiring</span>`;
+    } else {
+      turnLine = `<span style="color:var(--text3);">🌙 Uyqida... boshqalar harakatda</span>`;
+    }
+    actEl.innerHTML = `<div style="font-family:var(--font-mono);font-size:11px;letter-spacing:1px;">${turnLine}</div>`;
+  }
+
+  container.innerHTML = players.map(p => {
+    const isSelf = p.uid === currentUser.uid;
+    const voteCount = Object.values(gs.votes || {}).filter(v => v === p.uid).length;
+    let classes = 'player-game-card';
+    if (!p.alive) classes += ' dead';
+    if (isSelf) classes += ' self';
+
+    // Tanlangan belgini FAQAT o'z roliga ko'rsatish
+    if (isNight && (me?.role === 'mafia' || me?.role === 'don') && na.kill === p.uid) classes += ' targeted';
+    if (isNight && me?.role === 'doctor' && na.heal === p.uid) classes += ' protected';
+    if (isNight && me?.role === 'detective' && na.check === p.uid) classes += ' voted';
+    if (isNight && me?.role === 'lawyer' && na.protect === p.uid) classes += ' protected';
+    if (isNight && me?.role === 'escort' && na.block === p.uid) classes += ' targeted';
+    if (isNight && me?.role === 'killer' && na.killsolo === p.uid) classes += ' targeted';
+
+    let clickable = '';
+    if (me?.alive && !isSelf && p.alive) {
+      if (isNight && (me.role === 'mafia' || me.role === 'don')) clickable = `onclick="nightAction('kill','${p.uid}')"` ;
+      else if (isNight && me.role === 'doctor') clickable = `onclick="nightAction('heal','${p.uid}')"`;
+      else if (isNight && me.role === 'detective') clickable = `onclick="nightAction('check','${p.uid}')"`;
+      else if (isNight && me.role === 'lawyer') clickable = `onclick="nightAction('protect','${p.uid}')"`;
+      else if (isNight && me.role === 'escort') clickable = `onclick="nightAction('block','${p.uid}')"`;
+      else if (isNight && me.role === 'killer') clickable = `onclick="nightAction('killsolo','${p.uid}')"`;
+      else if (isVoting) clickable = `onclick="castVote('${p.uid}')"`;
+    }
+
+    // Show role to mafia teammates or if dead
+    let roleTag = '';
+    if (['mafia','don','lawyer'].includes(myRole) && ['mafia','don','lawyer'].includes(p.role) && !isSelf) {
+      const rdTeam = getRoleData(p.role); roleTag = `<span class="player-revealed-role badge-red">${rdTeam.icon} ${rdTeam.label}</span>`;
+    }
+    if (!p.alive) {
+      const rd = getRoleData(p.role);
+      roleTag = `<span class="player-revealed-role" style="background:var(--surface3); color:var(--text3);">${rd.icon} ${rd.label}</span>`;
+    }
+
+    return `
+      <div class="${classes}" ${clickable}>
+        ${!p.alive ? '<div class="dead-overlay">💀</div>' : ''}
+        <div class="player-avatar">${p.name[0].toUpperCase()}</div>
+        <div class="player-game-name">${escHtml(p.name)} ${isSelf ? '<span style="color:var(--gold);">(Siz)</span>' : ''}</div>
+        ${roleTag}
+        ${isVoting && voteCount > 0 ? `<div class="player-vote-count">${voteCount}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function renderGameActions(gs, me) {
+  const actions = document.getElementById('game-actions');
+  if (!me?.alive) {
+    actions.innerHTML = '<span style="font-family:var(--font-mono); font-size:12px; color:var(--text3); letter-spacing:1px;">☠️ Siz eliminatsiya qilindingiz. Kuzatuvchisiz.</span>';
+    return;
+  }
+  const isNight = gs.phase === 'night';
+  const isDay = gs.phase === 'day';
+  const isVoting = gs.phase === 'voting';
+
+  // Night paytida renderGamePlayers o'zi navbat + tanlangan odamni ko'rsatadi
+  if (isNight) return;
+
+  if (isVoting) {
+    actions.innerHTML = '<span style="font-family:var(--font-mono); font-size:11px; color:var(--gold); letter-spacing:1px;">🗳️ Mafia deb o\'ylaganchani tanlang</span>';
+  } else if (isDay) {
+    actions.innerHTML = '<span style="font-family:var(--font-mono); font-size:11px; color:var(--text2); letter-spacing:1px;">☀️ Muhokama qiling, so\'ng ovoz berish bosqichi</span>';
+  }
+}
+
+// ── NIGHT ACTIONS ─────────────────────────────
+window.nightAction = async function(type, targetUid) {
+  if (!currentRoomId) return;
+  const snap = await get(ref(db, `rooms/${currentRoomId}/gameState`));
+  if (!snap.exists()) return;
+  const gs = snap.val();
+  const me = gs.players[currentUser.uid];
+  if (!me?.alive || gs.phase !== 'night') return;
+
+  const nightActions = gs.nightActions || {};
+  nightActions[type] = targetUid;
+  // Track who performed each action (needed for warlock revenge and block logic)
+  if (type === 'kill')     nightActions.killBy     = currentUser.uid;
+  if (type === 'killsolo') nightActions.killsoloBy = currentUser.uid;
+  if (type === 'heal')     nightActions.healBy     = currentUser.uid;
+  if (type === 'check')    nightActions.checkBy    = currentUser.uid;
+  if (type === 'protect')  nightActions.protectBy  = currentUser.uid;
+  if (type === 'block')    nightActions.blockBy    = currentUser.uid;
+
+  // Komissar tekshirish natijasi (advokat himoyasi hisobga olinadi)
+  if (type === 'check') {
+    const target = gs.players[targetUid];
+    if (target) {
+      const lawyerProtected = nightActions.protect === targetUid;
+      const isMafia = ['mafia','don','lawyer'].includes(target.role) && !lawyerProtected;
+      toast(`${target.name} — ${isMafia ? '🔴 MAFIA!' : '🟢 Mafia emas'}`, isMafia ? 'error' : 'success');
+    }
+  }
+  // Kezuvchi bloklash
+  if (type === 'block') {
+    toast(`💃 Bloklash tanlandi — ${gs.players[targetUid]?.name}`, 'info');
+  }
+
+  await update(ref(db, `rooms/${currentRoomId}/gameState`), { nightActions });
+  toast('Amal saqlandi ✓', 'success');
+};
+
+// ── VOTE ──────────────────────────────────────
+window.castVote = async function(targetUid) {
+  if (!currentRoomId) return;
+  const snap = await get(ref(db, `rooms/${currentRoomId}/gameState`));
+  if (!snap.exists()) return;
+  const gs = snap.val();
+  if (gs.phase !== 'voting') return;
+  const me = gs.players[currentUser.uid];
+  if (!me?.alive) return;
+
+  const votes = gs.votes || {};
+  votes[currentUser.uid] = targetUid;
+  await update(ref(db, `rooms/${currentRoomId}/gameState`), { votes });
+  toast('Ovoz berildi ✓', 'success');
+};
+
+// ── ADVANCE PHASE (host only) ─────────────────
+let _advanceInProgress = false;
+async function advancePhase(gs) {
+  // Bir vaqtda ikki marta chaqirilishini oldini olish
+  if (_advanceInProgress) return;
+  _advanceInProgress = true;
+  try {
+    const snap = await get(ref(db, `rooms/${currentRoomId}/gameState`));
+    if (!snap.exists()) return;
+    const currentGs = snap.val();
+    // Phase o'tib ketmagan ekanligini qayta tekshirish
+    if (currentGs.phase !== gs.phase || currentGs.round !== gs.round) return;
+
+    if (currentGs.phase === 'night') {
+      await processNight(currentGs);
+    } else if (currentGs.phase === 'day') {
+      await startVoting(currentGs);
+    } else if (currentGs.phase === 'voting') {
+      await processVoting(currentGs);
+    }
+  } finally {
+    _advanceInProgress = false;
+  }
+}
+
+async function processNight(gs) {
+  const na = gs.nightActions || {};
+  const killTarget  = na.kill;       // Mafiya/Don o'ldirish
+  const healTarget  = na.heal;       // Doktor davolash
+  const checkTarget = na.check;      // Komissar tekshirish
+  const protectTarget = na.protect;  // Advokat himoya (mafiayani yashirish)
+  const blockTarget = na.block;      // Kezuvchi bloklash
+  const killSolo    = na.killsolo;   // Qotil o'ldirish
+  const log = gs.log || [];
+  const players = gs.players;
+
+  // ── 1. QOTIL harakati ──
+  if (killSolo && players[killSolo]?.alive) {
+    if (killSolo === healTarget) {
+      log.push(`🔵 Doktor Qotilning qurbonini saqlab qoldi!`);
+    } else {
+      const victim = players[killSolo];
+      // Afsungar qasosi
+      if (victim.role === 'warlock') {
+        players[killSolo].alive = false;
+        const killerUid = na.killsoloBy;
+        if (killerUid && killerUid !== killSolo && players[killerUid]?.alive) {
+          players[killerUid].alive = false;
+          log.push(`🧞 Afsungar ${victim.name} o'ldi, lekin Qotilni ham o'zi bilan olib ketdi!`);
+        } else {
+          log.push(`🧞 Afsungar ${victim.name} o'ldirildi.`);
+        }
+      } else {
+        players[killSolo].alive = false;
+        log.push(`🔪 Qotil ${victim.name}ni o'ldirdi (${getRoleData(victim.role).label}).`);
+      }
+    }
+  }
+
+  // ── 2. MAFIYA harakati ──
+  if (killTarget && players[killTarget]?.alive) {
+    if (killTarget === healTarget) {
+      log.push(`🔵 Doktor kimnidir saqlab qoldi! Hech kim o'lmadi.`);
+    } else if (blockTarget && blockTarget === na.killBy) {
+      log.push(`💃 Kezuvchi mafiyani blokladi — o'ldirish bekor bo'ldi!`);
+    } else {
+      const victim = players[killTarget];
+      // Bo'ri tekshirish — mafiya o'ldirsa Mafiaga aylanadi
+      if (victim.role === 'wolf') {
+        players[killTarget].role = 'mafia';
+        log.push(`🐺 Bo'ri mafiya tomonidan "o'ldirildi" — u endi Mafiaga aylandi!`);
+      }
+      // Afsungar qasosi — tunda mafiya o'ldirsa
+      else if (victim.role === 'warlock') {
+        players[killTarget].alive = false;
+        const killerUid = na.killBy;
+        if (killerUid && killerUid !== killTarget && players[killerUid]?.alive) {
+          players[killerUid].alive = false;
+          log.push(`🧞 Afsungar ${victim.name} o'ldi va ${players[killerUid].name}ni ham olib ketdi!`);
+        } else {
+          log.push(`🧞 Afsungar o'ldirildi!`);
+        }
+      } else {
+        players[killTarget].alive = false;
+        log.push(`🌙 ${victim.name} o'ldirildi (${getRoleData(victim.role).label}).`);
+      }
+    }
+  } else if (!killTarget) {
+    log.push(`🌙 Bu kechasi mafiya hech kimni o'ldirmadi.`);
+  }
+
+  // ── 3. KOMISSAR tekshirish (Advokat himoyasi) ──
+  if (checkTarget && players[checkTarget]) {
+    const target = players[checkTarget];
+    const isLawyerProtected = protectTarget === checkTarget;
+    const isMafia = ['mafia','don','lawyer'].includes(target.role);
+    // Serjant: Komissar o'lsa, uning o'rnini egallaydi (keyingi kun boshida)
+    if (isLawyerProtected && isMafia) {
+      log.push(`🕵️ Komissar tekshirdi — Advokat himoyasi tufayli mafia belgisi yashirildi.`);
+    }
+  }
+
+  // ── 4. Komissar o'lgan bo'lsa SERJANT oladimi? ──
+  const aliveDetective = Object.values(players).find(p => p.role === 'detective' && p.alive);
+  const aliveSergent   = Object.values(players).find(p => p.role === 'sergeant'  && p.alive);
+  // Agar komissar o'lgan, serjant tirik bo'lsa detektiv qil
+  const deadDetective  = Object.values(players).find(p => p.role === 'detective' && !p.alive);
+  if (deadDetective && aliveSergent && !aliveDetective) {
+    aliveSergent.role = 'detective';
+    log.push(`👮 Serjant Komissar o'rnini egalladi!`);
+  }
+
+  const newGs = {
+    ...gs,
+    phase: 'day',
+    round: (gs.round || 1),
+    phaseStart: { '.sv': 'timestamp' },
+    phaseDuration: PHASE_DURATIONS.day,
+    players, log,
+    nightActions: {},
+    votes: {}
+  };
+
+  const winner = checkWinner(newGs);
+  if (winner) {
+    await endGame(newGs, winner);
+    return;
+  }
+  await set(ref(db, `rooms/${currentRoomId}/gameState`), newGs);
+}
+
+async function startVoting(gs) {
+  const log = gs.log || [];
+  log.push(`🗳️ Ovoz berish bosqichi! Mafiani toping.`);
+  const newGs = { ...gs, phase: 'voting', phaseStart: { '.sv': 'timestamp' }, phaseDuration: PHASE_DURATIONS.voting, log, votes: {} };
+  await set(ref(db, `rooms/${currentRoomId}/gameState`), newGs);
+}
+
+async function processVoting(gs) {
+  const votes = gs.votes || {};
+  const players = gs.players;
+  const log = gs.log || [];
+
+  // Count votes
+  const tally = {};
+  Object.values(votes).forEach(v => { tally[v] = (tally[v] || 0) + 1; });
+  let maxVotes = 0, eliminated = null;
+  Object.entries(tally).forEach(([uid, cnt]) => {
+    if (cnt > maxVotes) { maxVotes = cnt; eliminated = uid; }
+  });
+
+  if (eliminated && players[eliminated]) {
+    const ePlayer = players[eliminated];
+    ePlayer.alive = false;
+    log.push(`🗳️ ${ePlayer.name} oyindan chiqarildi (${getRoleData(ePlayer.role).label}).`);
+    // Afsungar kunduz o'ldirilsa, o'zi birini tanlaydi (eng ko'p ovoz berganini)
+    if (ePlayer.role === 'warlock') {
+      // Eng ko'p ovoz bergan kishini o'ldiradi
+      const voterTally = {};
+      Object.entries(gs.votes || {}).forEach(([voter, voted]) => {
+        if (voted === eliminated) {
+          voterTally[voter] = (voterTally[voter] || 0) + 1;
+          // Count each voter once
+          voterTally[voter] = 1;
+        }
+      });
+      // Birinchi ovoz berganini (tally keys) olib o'ldiradi
+      const voterKeys = Object.keys(voterTally).filter(uid => players[uid]?.alive);
+      if (voterKeys.length > 0) {
+        const revengeUid = voterKeys[0];
+        if (players[revengeUid]) {
+          players[revengeUid].alive = false;
+          log.push(`🧞 Afsungar qasosi: ${players[revengeUid].name} ham olib ketildi!`);
+        }
+      }
+    }
+    // Bo'ri: kunduz ovoz bilan o'ldirilsa — shunchaki o'ladi (Qotil emas)
+    // Wolf ovoz bilan o'lsa normal o'ladi
+  } else {
+    log.push(`🗳️ Ovozlar teng — hech kim chiqarilmadi.`);
+  }
+
+  const newGs = {
+    ...gs,
+    phase: 'night',
+    round: (gs.round || 1) + 1,
+    phaseStart: { '.sv': 'timestamp' },
+    phaseDuration: PHASE_DURATIONS.night,
+    players, log,
+    nightActions: {}, votes: {}
+  };
+  log.push(`🌙 Tun ${newGs.round} boshlandi.`);
+
+  const winner = checkWinner(newGs);
+  if (winner) {
+    await endGame(newGs, winner);
+    return;
+  }
+  await set(ref(db, `rooms/${currentRoomId}/gameState`), newGs);
+}
+
+function checkWinner(gs) {
+  // Faqat TIRIK o'yinchilarni hisoblash (alive===true bo'lganlar)
+  const alive = Object.values(gs.players || {}).filter(p => p.alive === true);
+  const aliveTotal      = alive.length;
+  const aliveMafiaTeam  = alive.filter(p => ['mafia','don','lawyer'].includes(p.role)).length;
+  const aliveKiller     = alive.filter(p => p.role === 'killer').length;
+  const aliveCivilTeam  = alive.filter(p => !['mafia','don','lawyer','killer'].includes(p.role)).length;
+
+  // Hech kim qolmasa — aholi yutadi (mafia ham o'lik)
+  if (aliveTotal === 0) return 'civilians';
+
+  // Qotil yolg'iz qolsa — Qotil yutadi
+  if (aliveKiller >= 1 && aliveTotal === aliveKiller) return 'killer';
+
+  // Mafia to'liq tamom bo'lsa — aholi yutadi (Qotil bo'lsa ham)
+  if (aliveMafiaTeam === 0 && aliveKiller === 0) return 'civilians';
+
+  // Mafia soni aholi + qotildan KO'P YOKI TENG bo'lsa — mafia yutadi
+  // (ya'ni mafia artimiyasi aholi tomoni va qotilni yengib o'tsa)
+  const aliveNonMafia = alive.filter(p => !['mafia','don','lawyer'].includes(p.role)).length;
+  if (aliveMafiaTeam > 0 && aliveMafiaTeam >= aliveNonMafia) return 'mafia';
+
+  return null;
+}
+
+// O'yinchi chiqib ketgandan yoki alive:false bo'lgandan keyin g'olibni tekshirish
+// Faqat host chaqiradi (boshqa hostlar ikki marta chaqirmasin deb)
+async function checkWinnerAfterDisconnect() {
+  if (!currentRoomId || !currentRoomData) return;
+  if (currentRoomData.hostUid !== currentUser.uid) return;
+  try {
+    const snap = await get(ref(db, `rooms/${currentRoomId}/gameState`));
+    if (!snap.exists()) return;
+    const gs = snap.val();
+    if (gs.phase === 'ended') return; // O'yin allaqachon tugagan
+    const winner = checkWinner(gs);
+    if (winner) {
+      await endGame(gs, winner);
+    }
+  } catch(e) { console.error('checkWinnerAfterDisconnect:', e); }
+}
+
+async function endGame(gs, winner) {
+  gs.winner = winner;
+  gs.phase = 'ended';
+  gs.log.push(winner === 'mafia' ? '🔴 MAFIA YUTDI!' : winner === 'killer' ? '🔪 QOTIL YUTDI!' : '🟢 TINCH AHOLI YUTDI!');
+  await set(ref(db, `rooms/${currentRoomId}/gameState`), gs);
+  // Give XP to winners
+  const players = Object.values(gs.players || {});
+  const winnerRole = winner === 'mafia' ? 'mafia' : 'civilian';
+  for (const p of players) {
+    if (p.uid === 'admin') continue;
+    const isWinner = winner === 'mafia' ? ['mafia','don','lawyer'].includes(p.role) : winner === 'killer' ? p.role === 'killer' : !['mafia','don','lawyer','killer'].includes(p.role);
+    if (isWinner) {
+      await addExp(p.uid, EXP_PER_WIN);
+      // +1 win
+      await runTransaction(ref(db, `users/${p.uid}/wins`), (wins) => (wins || 0) + 1);
+    }
+  }
+}
+
+async function addExp(uid, amount) {
+  const snap = await get(ref(db, `users/${uid}`));
+  if (!snap.exists()) return;
+  const user = snap.val();
+  let exp = (user.exp || 0) + amount;
+  let level = user.level || 0;
+  while (exp >= EXP_PER_LEVEL && level < MAX_LEVEL) {
+    exp -= EXP_PER_LEVEL;
+    level++;
+    await checkLevelReward(uid, level);
+  }
+  await update(ref(db, `users/${uid}`), { exp, level });
+}
+
+async function checkLevelReward(uid, level) {
+  if (level % 5 !== 0) return;
+  const bgSnap = await get(ref(db, 'backgrounds'));
+  if (!bgSnap.exists()) return;
+  const rewards = [];
+  bgSnap.forEach(child => {
+    const bg = child.val();
+    if (bg.rewardLevel === level) rewards.push({ key: child.key, name: bg.name });
+  });
+  for (const reward of rewards) {
+    try {
+      const colSnap = await get(ref(db, `users/${uid}/collection`));
+      const rawCol = colSnap.exists() ? colSnap.val() : [];
+      const col = Array.isArray(rawCol) ? rawCol : (rawCol ? Object.values(rawCol) : []);
+      if (!col.includes(reward.key)) {
+        col.push(reward.key);
+        await update(ref(db, `users/${uid}`), { collection: col });
+        toast(`🎁 Daraja ${level} sovg'asi: ${reward.name}!`, 'success');
+      }
+    } catch(e) { console.error('checkLevelReward error:', e); }
+  }
+}
+
+function checkGameOver(gs) {
+  if (gs.phase !== 'ended' || !gs.winner) return;
+  const screen = document.getElementById('game-over-screen');
+  const myRoleNow = gs.players[currentUser.uid]?.role;
+  const isWinner = gs.winner === 'killer'
+    ? myRoleNow === 'killer'
+    : gs.winner === 'mafia'
+      ? ['mafia','don','lawyer'].includes(myRoleNow)
+      : !['mafia','don','lawyer','killer'].includes(myRoleNow);
+
+  document.getElementById('game-over-icon').textContent = gs.winner === 'mafia' ? '🔴' : gs.winner === 'killer' ? '🔪' : '🟢';
+  document.getElementById('game-over-title').textContent = gs.winner === 'mafia' ? 'MAFIA YUTDI' : gs.winner === 'killer' ? 'QOTIL YUTDI' : 'AHOLI YUTDI';
+  document.getElementById('game-over-sub').textContent = isWinner ? '🏆 Tabriklaymiz! Siz yutdingiz!' : '😔 Siz yutqazdingiz';
+
+  const winners = Object.values(gs.players || {}).filter(p =>
+    gs.winner === 'mafia' ? ['mafia','don','lawyer'].includes(p.role) : gs.winner === 'killer' ? p.role === 'killer' : !['mafia','don','lawyer','killer'].includes(p.role)
+  );
+  document.getElementById('winners-list').innerHTML = winners.map(p =>
+    `<div class="winner-chip">${p.name}</div>`
+  ).join('');
+
+  screen.classList.add('show');
+  clearInterval(timerInterval);
+}
+
+window.exitGame = async function() {
+  document.getElementById('game-over-screen').classList.remove('show');
+  // Remove room
+  if (currentRoomId) {
+    await remove(ref(db, `rooms/${currentRoomId}`));
+  }
+  leaveRoomCleanup();
+};
+
+window.leaveGameDuringPlay = async function() {
+  const _leaveCf = await showConfirm({
+    icon: '🚪', title: "O'YINDAN CHIQISH",
+    message: "O'yin vaqtida chiqmoqchimisiz?\nSiz o'yindan olib tashlanasiz.",
+    okText: 'Chiqish', cancelText: 'Qolish'
+  });
+  if (!_leaveCf) return;
+  if (!currentRoomId) return;
+  try {
+    const snap = await get(ref(db, `rooms/${currentRoomId}`));
+    if (snap.exists()) {
+      const room = snap.val();
+      if (room.hostUid === currentUser.uid) {
+        // Host chiqsa xona o'chadi
+        await remove(ref(db, `rooms/${currentRoomId}`));
+      } else {
+        // Faqat o'yinchini o'lik qilib belgilash
+        const gsSnap = await get(ref(db, `rooms/${currentRoomId}/gameState`));
+        if (gsSnap.exists()) {
+          const gsData = gsSnap.val();
+          const me = gsData.players?.[currentUser.uid];
+          if (me) {
+            const log = gsData.log || [];
+            log.push(`🚪 ${currentUser.name} o'yindan chiqib ketdi (${getRoleData(me.role).label}).`);
+            await update(ref(db, `rooms/${currentRoomId}/gameState`), {
+              [`players/${currentUser.uid}/alive`]: false,
+              log
+            });
+          }
+        }
+        await remove(ref(db, `rooms/${currentRoomId}/players/${currentUser.uid}`));
+        // O'yinchi chiqgandan keyin g'olibni tekshirish (faqat host qiladi)
+        await checkWinnerAfterDisconnect();
+      }
+    }
+  } catch(e) { /* xato bo'lsa ham chiqamiz */ }
+  leaveRoomCleanup();
+};
+
+// ── SEND CHATS ────────────────────────────────
+window.sendMafiaChat = async function() {
+  const inp = document.getElementById('mafia-chat-input');
+  const text = inp.value.trim();
+  if (!text || !currentRoomId) return;
+  await push(ref(db, `rooms/${currentRoomId}/mafiaChat`), {
+    uid: currentUser.uid, name: currentUser.name, text, ts: serverTimestamp()
+  });
+  inp.value = '';
+};
+
+window.sendDayChat = async function() {
+  const inp = document.getElementById('day-chat-input');
+  const text = inp.value.trim();
+  if (!text || !currentRoomId) return;
+  const snap = await get(ref(db, `rooms/${currentRoomId}/gameState`));
+  if (snap.exists() && snap.val().phase === 'night') {
+    toast("Tunda gaplashib bo'lmaydi!", 'error');
+    return;
+  }
+  await push(ref(db, `rooms/${currentRoomId}/dayChat`), {
+    uid: currentUser.uid, name: currentUser.name, text, ts: serverTimestamp()
+  });
+  inp.value = '';
+};
+
+// ── FIND BY ID ────────────────────────────────
+window.openFindByIdModal = () => openModal('find-id-modal');
+
+window.findRoomById = async function() {
+  const id = document.getElementById('search-room-id-input').value.trim();
+  const result = document.getElementById('find-room-result');
+  const joinBtn = document.getElementById('find-join-btn');
+  if (!id) return toast('ID kiriting', 'error');
+  result.style.display = 'block';
+  result.innerHTML = `<div class="text-mono text-muted">Qidirilmoqda...</div>`;
+  joinBtn.style.display = 'none';
+
+  const snap = await get(ref(db, `rooms/${id}`));
+  if (!snap.exists()) {
+    result.innerHTML = `<div class="text-mono text-accent">❌ Xona topilmadi</div>`;
+    return;
+  }
+  const room = snap.val();
+  result.innerHTML = `<div class="id-search-info">
+    <div>🏠 Xona: <b>${escHtml(room.name)}</b></div>
+    <div>👤 Yaratuvchi: ${escHtml(room.hostName || '—')}</div>
+    <div>🔐 Tur: ${room.type === 'private' ? 'Shaxsiy (parolli)' : 'Ommaviy'}</div>
+    <div>👥 O'yinchilar: ${Object.keys(room.players||{}).length} / ${room.maxPlayers}</div>
+    <div>📊 Holat: ${room.status === 'waiting' ? '⏳ Kutmoqda' : '🎮 O\'ynalmoqda'}</div>
+  </div>`;
+
+  if (room.status === 'waiting') {
+    pendingJoinRoomId = id;
+    pendingJoinRoomData = room;
+    joinBtn.style.display = 'inline-flex';
+  } else {
+    joinBtn.style.display = 'none';
+  }
+};
+
+window.joinFoundRoom = function() {
+  closeModal('find-id-modal');
+  joinRoom(pendingJoinRoomId);
+};
+
+// ── SHOP ──────────────────────────────────────
+async function loadShop() {
+  const snap = await get(ref(db, 'backgrounds'));
+  const grid = document.getElementById('shop-grid');
+  const items = [];
+  if (snap.exists()) {
+    snap.forEach(child => {
+      const bg = child.val();
+      bg._id = child.key;
+      if (bg.price > 0) items.push(bg);
+    });
+  }
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🛍️</div><div>Hozirda sotuvda mahsulot yo\'q</div></div>`;
+    return;
+  }
+  // Har doim Firebase'dan yangi collection o'qisin
+  let freshCollection = Array.isArray(currentUser.collection) ? currentUser.collection : [];
+  if (!currentUser.isAdmin && currentUser.uid) {
+    try {
+      const uSnap = await get(ref(db, `users/${currentUser.uid}/collection`));
+      if (uSnap.exists()) {
+        const raw = uSnap.val();
+        freshCollection = Array.isArray(raw) ? raw : (raw ? Object.values(raw) : []);
+        currentUser.collection = freshCollection;
+      }
+    } catch(e) {}
+  }
+  grid.innerHTML = items.map(bg => {
+    const owned = freshCollection.includes(bg._id);
+    return `
+      <div class="shop-item ${owned ? 'owned' : ''}" onclick="buyItem('${bg._id}')">
+        <div class="shop-item-preview" style="background:${bg.color || '#111'}; position:relative; overflow:hidden;" data-bgid="${bg._id}" data-pattern="${bg.pattern||'none'}" data-pcolor="${bg.patternColor||'#ffffff'}" data-popacity="${bg.patternOpacity||0.3}" data-pspeed="${bg.patternSpeed||1}" data-psize="${bg.patternSize||1}">
+          <canvas class="shop-pattern-canvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+        </div>
+        <div class="shop-item-info">
+          <div class="shop-item-name">${escHtml(bg.name)}</div>
+          <div class="shop-item-price">
+            ${owned ? '<span class="badge-green">Mavjud</span>' : `💰 ${bg.price}`}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Start pattern animations on shop items — faqat ko'rinayotganlarida (lazy)
+  const _shopObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const el = entry.target;
+      if (entry.isIntersecting && !el._animStarted) {
+        el._animStarted = true;
+        const pattern = el.dataset.pattern;
+        if (pattern && pattern !== 'none' && PATTERNS[pattern]) {
+          const cv = el.querySelector('.shop-pattern-canvas');
+          if (cv) {
+            startPatternOnCanvas(cv, pattern, {
+              color: el.dataset.pcolor || '#ffffff',
+              opacity: parseFloat(el.dataset.popacity) || 0.3,
+              speed: parseFloat(el.dataset.pspeed) || 1,
+              size: parseFloat(el.dataset.psize) || 1
+            });
+          }
+        }
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.shop-item-preview').forEach(el => _shopObserver.observe(el));
+}
+
+window.buyItem = async function(bgId) {
+  if (!currentUser) return;
+
+  const snap = await get(ref(db, `backgrounds/${bgId}`));
+  if (!snap.exists()) return toast("Fon topilmadi", 'error');
+  const bg = snap.val();
+
+  // Kolleksiyani Firebase'dan yangi o'qi
+  let userSnap, user;
+  if (!currentUser.isAdmin) {
+    userSnap = await get(ref(db, `users/${currentUser.uid}`));
+    if (!userSnap.exists()) return;
+    user = userSnap.val();
+  } else {
+    user = currentUser;
+  }
+
+  const collection = Array.isArray(user.collection) ? user.collection :
+    (user.collection ? Object.values(user.collection) : []);
+
+  // Agar allaqachon mavjud bo'lsa — faqat xabar bersin
+  if (collection.includes(bgId)) {
+    return toast("✅ Bu fon allaqachon kolleksiyangizda bor!", 'info');
+  }
+
+  // Admin uchun bepul berish
+  if (currentUser.isAdmin) {
+    if (!currentUser.collection) currentUser.collection = [];
+    if (!Array.isArray(currentUser.collection)) currentUser.collection = Object.values(currentUser.collection);
+    currentUser.collection.push(bgId);
+    toast(`✅ ${bg.name} kolleksiyaga qo'shildi!`, 'success');
+    loadShop();
+    return;
+  }
+
+  // Pullik foydalanuvchi uchun tasdiqlash
+  if ((user.wallet || 0) < bg.price) {
+    return toast(`❌ Mablag' yetarli emas! Kerak: ${bg.price} so'm, Sizda: ${user.wallet || 0} so'm`, 'error');
+  }
+
+  const _buyCf = await showConfirm({
+    icon: '🛍️', title: 'SOTIB OLISH',
+    message: `"${bg.name}" — ${bg.price} so'm\nQoldiq: ${(user.wallet||0) - bg.price} so'm bo'ladi.`,
+    okText: "Sotib olish", cancelText: 'Bekor qilish', okClass: 'green'
+  });
+  if (!_buyCf) return;
+
+  const newCollection = [...collection, bgId];
+  const newWallet = (user.wallet || 0) - bg.price;
+  await update(ref(db, `users/${currentUser.uid}`), {
+    wallet: newWallet,
+    collection: newCollection
+  });
+  // Lokal cache yangilansin
+  currentUser.wallet = newWallet;
+  currentUser.collection = newCollection;
+  toast(`✅ ${bg.name} muvaffaqiyatli sotib olindi!`, 'success');
+  updateProfileUI();
+  loadShop();
+};
+
+// ── COLLECTIONS ───────────────────────────────
+window.openCollectionsModal = async function() {
+  openModal('collections-modal');
+  const bgSnap = await get(ref(db, 'backgrounds'));
+  const bgs = {};
+  if (bgSnap.exists()) bgSnap.forEach(c => { bgs[c.key] = c.val(); });
+  bgs['default_bg'] = { name: 'Standart fon', color: 'linear-gradient(135deg, #1a0a0a, #0a0a1a)', type: 'background', emoji: '⬛' };
+  bgs['default_avatar'] = { name: 'Standart avatar', color: '#1a1a24', type: 'avatar', emoji: '👤' };
+
+  let user = currentUser;
+  // For non-admin, refresh from Firebase
+  if (!currentUser.isAdmin) {
+    const userSnap = await get(ref(db, `users/${currentUser.uid}`));
+    if (!userSnap.exists()) return;
+    user = userSnap.val();
+  }
+  const collection = Array.isArray(user.collection) ? user.collection :
+    (user.collection ? Object.values(user.collection) : []);
+
+  const bgGrid = document.getElementById('collections-grid-bg');
+  const avGrid = document.getElementById('collections-grid-avatar');
+  bgGrid.innerHTML = '';
+  avGrid.innerHTML = '';
+
+  collection.forEach(id => {
+    const bg = bgs[id];
+    if (!bg) return;
+    const selected = (bg.type === 'background' ? user.activeBg : user.activeAvatar) === id;
+    const div = document.createElement('div');
+    div.className = `collection-item${selected ? ' selected' : ''}`;
+    div.style.background = bg.color || '#111';
+    div.style.position = 'relative';
+    div.style.overflow = 'hidden';
+
+    // Pattern canvas
+    if (bg.pattern && bg.pattern !== 'none' && PATTERNS[bg.pattern]) {
+      const cv = document.createElement('canvas');
+      cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border-radius:var(--radius);';
+      div.appendChild(cv);
+      // Start animation after DOM insertion
+      setTimeout(() => {
+        startPatternOnCanvas(cv, bg.pattern, {
+          color: bg.patternColor || '#ffffff',
+          opacity: bg.patternOpacity !== undefined ? bg.patternOpacity : 0.3,
+          speed: bg.patternSpeed !== undefined ? bg.patternSpeed : 1,
+          size: bg.patternSize !== undefined ? bg.patternSize : 1
+        });
+      }, 50);
+    }
+
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'collection-item-label';
+    labelDiv.textContent = bg.name;
+    labelDiv.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);padding:4px;font-family:var(--font-mono);font-size:9px;text-align:center;color:var(--text3);z-index:1;';
+    div.appendChild(labelDiv);
+
+    div.onclick = () => setActiveBg(id, bg.type);
+
+    // Remove button (not for default items)
+    if (id !== 'default_bg' && id !== 'default_avatar') {
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'btn btn-danger btn-sm';
+      removeBtn.style.cssText = 'position:absolute;top:4px;right:4px;padding:2px 5px;font-size:9px;z-index:2;opacity:0;transition:opacity .2s;min-width:unset;';
+      removeBtn.textContent = '✕';
+      removeBtn.title = "Kolleksiyadan o'chirish";
+      removeBtn.onclick = async (e) => {
+        e.stopPropagation();
+        if (!await showConfirm({
+          icon: '🗑️', title: "O'CHIRISH",
+          message: `"${bg.name}" ni kolleksiyangizdan o'chirishni xohlaysizmi?`,
+          okText: "O'chirish", cancelText: 'Bekor qilish'
+        })) return;
+        const rawCol = currentUser.collection || [];
+        const curCol = Array.isArray(rawCol) ? rawCol : Object.values(rawCol);
+        const newCol = curCol.filter(cid => cid !== id);
+        currentUser.collection = newCol;
+        if (currentUser.activeBg === id) currentUser.activeBg = 'default_bg';
+        if (currentUser.activeAvatar === id) currentUser.activeAvatar = 'default_avatar';
+        if (!currentUser.isAdmin) {
+          const upd = { collection: newCol };
+          if (upd.activeBg !== undefined || currentUser.activeBg === 'default_bg') upd.activeBg = currentUser.activeBg;
+          if (upd.activeAvatar !== undefined || currentUser.activeAvatar === 'default_avatar') upd.activeAvatar = currentUser.activeAvatar;
+          await update(ref(db, `users/${currentUser.uid}`), upd);
+        }
+        toast("O'chirildi", 'info');
+        openCollectionsModal();
+        applyUserBackground();
+      };
+      div.addEventListener('mouseenter', () => removeBtn.style.opacity = '1');
+      div.addEventListener('mouseleave', () => removeBtn.style.opacity = '0');
+      div.appendChild(removeBtn);
+    }
+    if (bg.type === 'background') bgGrid.appendChild(div);
+    else avGrid.appendChild(div);
+  });
+
+  if (bgGrid.innerHTML === '') bgGrid.innerHTML = '<div class="text-mono text-muted" style="font-size:11px;">Hali fon yo\'q</div>';
+  if (avGrid.innerHTML === '') avGrid.innerHTML = '<div class="text-mono text-muted" style="font-size:11px;">Hali avatar foni yo\'q</div>';
+};
+
+async function setActiveBg(id, type) {
+  const field = type === 'background' ? 'activeBg' : 'activeAvatar';
+  currentUser[field] = id;
+  if (currentUser.isAdmin) {
+    await update(ref(db, 'adminState'), { [field]: id });
+  } else {
+    await update(ref(db, `users/${currentUser.uid}`), { [field]: id });
+  }
+  // Also update in any current room
+  if (currentRoomId && currentUser.uid) {
+    update(ref(db, `rooms/${currentRoomId}/players/${currentUser.uid}`), { [field]: id }).catch(() => {});
+  }
+  toast('Fon o\'rnatildi ✓', 'success');
+  closeModal('collections-modal');
+  applyUserBackground();
+}
+
+// ── PROFILE EDIT ──────────────────────────────
+window.openEditProfileModal = function() {
+  document.getElementById('edit-name-input').value = currentUser.name || '';
+  openModal('edit-profile-modal');
+};
+
+window.saveProfile = async function() {
+  const name = document.getElementById('edit-name-input').value.trim();
+  const pass = document.getElementById('edit-pass-input').value;
+  if (!name || name.length < 2) return toast('Ism kamida 2 ta harf', 'error');
+  const upd = { name };
+  if (pass) {
+    if (pass.length < 6) return toast('Parol kamida 6 ta belgi', 'error');
+    upd.pass = pass;
+  }
+  await update(ref(db, `users/${currentUser.uid}`), upd);
+  toast('Profil yangilandi ✓', 'success');
+  closeModal('edit-profile-modal');
+};
+
+window.deleteAccount = async function() {
+  if (!await showConfirm({
+    icon: '💀', title: "HISOBNI O'CHIRISH",
+    message: "Hisobni butunlay o'chirishni xohlaysizmi?\nBu amalni qaytarib bo'lmaydi!",
+    okText: "Ha, o'chir", cancelText: 'Bekor qilish'
+  })) return;
+  await remove(ref(db, `users/${currentUser.uid}`));
+  currentUser = null;
+  document.getElementById('nav-admin').classList.add('hidden');
+  document.getElementById('tab-admin').classList.add('hidden');
+  showScreen('auth-screen');
+  toast('Hisob o\'chirildi', 'info');
+};
+
+
+window.logout = async function() {
+  if (!await showConfirm({
+    icon: '🚪', title: "CHIQISH",
+    message: "Hisobdan chiqishni xohlaysizmi?",
+    okText: 'Ha, chiqish', cancelText: 'Qolish'
+  })) return;
+  currentUser = null;
+  // Hide admin panel for next login
+  document.getElementById('nav-admin').classList.add('hidden');
+  document.getElementById('tab-admin').classList.add('hidden');
+  showScreen('auth-screen');
+  document.getElementById('login-phone').value = '';
+  document.getElementById('login-pass').value = '';
+  toast("Hisobdan chiqildi", 'info');
+};
+window.openTelegram = function() {
+  window.open('https://t.me/Nobody_ff2', '_blank');
+};
+
+window.openRulesModal = () => openModal('rules-modal');
+
+// ── ADMIN ─────────────────────────────────────
+async function loadAdminUsers() {
+  if (!currentUser?.isAdmin) return;
+  onValue(ref(db, 'users'), snap => {
+    const tbody = document.getElementById('users-tbody');
+    const rows = [];
+    let count = 0;
+    if (snap.exists()) {
+      snap.forEach(child => {
+        const u = child.val();
+        count++;
+        rows.push(`<tr>
+          <td>${escHtml(u.name||'—')}</td>
+          <td style="font-family:var(--font-mono);font-size:11px;">${escHtml(u.phone||'—')}</td>
+          <td>${u.level||0}</td>
+          <td>${u.exp||0}</td>
+          <td>${u.wallet||0}</td>
+          <td><button class="btn btn-gold btn-sm" onclick="adminWalletUser('${escHtml(u.phone||'')}')">💰</button></td>
+          <td><button class="btn btn-danger btn-sm" onclick="adminDeleteUser('${child.key}', '${escHtml(u.name||'')}')">🗑️</button></td>
+        </tr>`);
+      });
+    }
+    document.getElementById('users-count').textContent = count;
+    tbody.innerHTML = rows.join('');
+  });
+}
+
+window.adminDeleteUser = async function(uid, name) {
+  if (!await showConfirm({
+    icon: '🗑️', title: "FOYDALANUVCHINI O'CHIRISH",
+    message: `"${name}" foydalanuvchisini o'chirishni xohlaysizmi?\nBu amalni qaytarib bo'lmaydi!`,
+    okText: "O'chirish", cancelText: 'Bekor qilish'
+  })) return;
+  try {
+    await remove(ref(db, `users/${uid}`));
+    toast(`✅ "${name}" o'chirildi`, 'success');
+  } catch(e) {
+    toast("O'chirishda xato: " + e.message, 'error');
+  }
+};
+
+window.adminWalletUser = function(phone) {
+  document.getElementById('aw-phone').value = phone;
+  document.getElementById('aw-amount').value = '';
+  openModal('admin-add-wallet-modal');
+};
+
+window.inlineAddWallet = async function() {
+  const phone = document.getElementById('inline-wallet-phone').value.trim();
+  const amount = parseInt(document.getElementById('inline-wallet-amount').value) || 0;
+  const resultEl = document.getElementById('inline-wallet-result');
+  resultEl.textContent = '';
+  if (!phone || amount <= 0) { resultEl.style.color='var(--accent)'; resultEl.textContent = "❌ Telefon va miqdor kiriting"; return; }
+  if (!/^\+998\d{9}$/.test(phone)) { resultEl.style.color='var(--accent)'; resultEl.textContent = "❌ Format: +998XXXXXXXXX"; return; }
+  const uid = phoneToKey(phone);
+  const snap = await get(ref(db, `users/${uid}`));
+  if (!snap.exists()) { resultEl.style.color='var(--accent)'; resultEl.textContent = "❌ Foydalanuvchi topilmadi"; return; }
+  const curWallet = snap.val().wallet || 0;
+  await update(ref(db, `users/${uid}`), { wallet: curWallet + amount });
+  resultEl.style.color = 'var(--green)';
+  resultEl.textContent = `✅ ${snap.val().name} ga ${amount} so'm qo'shildi. Yangi balans: ${curWallet + amount} so'm`;
+  document.getElementById('inline-wallet-phone').value = '';
+  document.getElementById('inline-wallet-amount').value = '';
+};
+window.doAddWallet = async function() {
+  const phone = document.getElementById('aw-phone').value.trim();
+  const amount = parseInt(document.getElementById('aw-amount').value) || 0;
+  if (!phone || amount <= 0) return toast("Ma'lumotlarni to'ldiring", 'error');
+  // Try both +998... and 998... formats
+  const uid = phoneToKey(phone); // strips + → 998XXXXXXXXX
+  const snap = await get(ref(db, `users/${uid}`));
+  if (!snap.exists()) return toast("Foydalanuvchi topilmadi", 'error');
+  const curWallet = (snap.val().wallet || 0);
+  await update(ref(db, `users/${uid}`), { wallet: curWallet + amount });
+  toast(`✅ ${phone} ga ${amount} so'm qo'shildi`, 'success');
+  closeModal('admin-add-wallet-modal');
+};
+
+window.adminAddWallet = window.doAddWallet;
+
+window.adminLookupRoom = async function() {
+  const id = document.getElementById('admin-room-id-input').value.trim();
+  const result = document.getElementById('admin-room-result');
+  if (!id) return;
+  const snap = await get(ref(db, `rooms/${id}`));
+  if (!snap.exists()) {
+    result.innerHTML = `<div class="text-mono text-accent">❌ Xona topilmadi</div>`;
+    return;
+  }
+  const room = snap.val();
+  const gs = room.gameState;
+  if (!gs) {
+    result.innerHTML = `<div class="text-mono text-muted">Xona kutmoqda (o'yin boshlanmagan)</div>`;
+    return;
+  }
+  const players = Object.values(gs.players || {});
+  result.innerHTML = `<div style="font-family:var(--font-mono); font-size:11px; line-height:2;">
+    <b>${escHtml(room.name)}</b> — ${room.status}<br>
+    ${players.map(p => `<span style="color:${p.role==='mafia'?'var(--accent)':p.role==='doctor'?'var(--blue)':p.role==='detective'?'var(--detective)':'var(--green)'}">
+      ${p.alive?'🟢':'☠️'} ${escHtml(p.name)} — ${getRoleData(p.role).icon} ${getRoleData(p.role).label}
+    </span>`).join('<br>')}
+    <br><button class="btn btn-danger btn-sm" style="margin-top:10px;" onclick="adminDeleteRoom('${id}','${escHtml(room.name||'')}')">🗑️ Xonani tarqatish</button>
+  </div>`;
+};
+
+// ── ADMIN: BARCHA XONALARNI KO'RISH VA TARQATISH ──────────────────────────
+window.loadAdminRooms = async function() {
+  if (!currentUser?.isAdmin) return;
+  const snap = await get(ref(db, 'rooms'));
+  const container = document.getElementById('admin-rooms-list');
+  const countEl = document.getElementById('admin-rooms-count');
+  if (!container) return;
+  if (!snap.exists()) {
+    container.innerHTML = '<div class="text-mono text-muted" style="font-size:11px;">Hozirda faol xona yo\'q</div>';
+    if (countEl) countEl.textContent = '0';
+    return;
+  }
+  const rooms = [];
+  snap.forEach(child => { const v = child.val(); v._id = child.key; rooms.push(v); });
+  if (countEl) countEl.textContent = rooms.length;
+
+  const statusLabel = { waiting: '⏳ Kutmoqda', playing: '🎮 O\'yinda' };
+  const statusColor = { waiting: 'var(--gold)', playing: 'var(--green)' };
+
+  container.innerHTML = `<table class="users-table"><thead><tr>
+    <th>Xona nomi</th><th>Tur</th><th>Holat</th><th>O'yinchilar</th><th>Host</th><th>Tarqatish</th>
+  </tr></thead><tbody>${rooms.map(r => {
+    const playerCount = Object.keys(r.players || {}).length;
+    const typeLabel = r.type === 'private' ? '🔒 Shaxsiy' : '🌐 Ochiq';
+    const st = r.status || 'waiting';
+    return `<tr>
+      <td style="font-family:var(--font-mono);font-size:11px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(r.name||'—')}</td>
+      <td style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">${typeLabel}</td>
+      <td style="font-family:var(--font-mono);font-size:10px;color:${statusColor[st]||'var(--text3)'};">${statusLabel[st]||st}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;text-align:center;">${playerCount} / ${r.maxPlayers||'?'}</td>
+      <td style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">${escHtml(r.hostName||'—')}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="adminDeleteRoom('${r._id}','${escHtml(r.name||'')}')">🗑️</button></td>
+    </tr>`;
+  }).join('')}</tbody></table>`;
+};
+
+window.adminDeleteRoom = async function(roomId, roomName) {
+  if (!await showConfirm({
+    icon: '🗑️',
+    title: "XONANI TARQATISH",
+    message: `"${roomName}" xonasini tarqatmoqchimisiz?\nBarcha o'yinchilar xonadan chiqariladi!`,
+    okText: "Ha, tarqat",
+    cancelText: 'Bekor qilish'
+  })) return;
+  try {
+    await remove(ref(db, `rooms/${roomId}`));
+    toast(`✅ "${roomName}" xonasi tarqatildi!`, 'success');
+    loadAdminRooms();
+    // Agar adminLookupRoom natijasi ko'rsatilayotgan bo'lsa, tozalash
+    const resultEl = document.getElementById('admin-room-result');
+    if (resultEl) resultEl.innerHTML = '';
+  } catch(e) {
+    toast("Xonani tarqatishda xato: " + e.message, 'error');
+  }
+};
+
+// ── ADMIN COLOR PICKER ────────────────────────
+let colorMode = 'solid';
+
+window.setColorMode = function(mode) {
+  colorMode = mode;
+  document.getElementById('solid-color-section').style.display = mode === 'solid' ? 'block' : 'none';
+  document.getElementById('gradient-color-section').style.display = mode === 'gradient' ? 'block' : 'none';
+  document.getElementById('color-mode-solid').className = mode === 'solid' ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
+  document.getElementById('color-mode-gradient').className = mode === 'gradient' ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
+  updateColorPreview();
+};
+
+function buildGradientValue() {
+  const c1 = document.getElementById('grad-color1').value;
+  const c2 = document.getElementById('grad-color2').value;
+  const dir = document.getElementById('grad-direction').value;
+  const isRadial = document.getElementById('grad-radial').checked;
+  const useMid = document.getElementById('grad-use-mid').checked;
+  const cMid = document.getElementById('grad-color-mid').value;
+
+  if (isRadial) {
+    if (useMid) return `radial-gradient(ellipse at center, ${c1}, ${cMid}, ${c2})`;
+    return `radial-gradient(ellipse at center, ${c1}, ${c2})`;
+  } else {
+    if (useMid) return `linear-gradient(${dir}, ${c1}, ${cMid}, ${c2})`;
+    return `linear-gradient(${dir}, ${c1}, ${c2})`;
+  }
+}
+
+function updateColorPreview() {
+  updateAdminPreview();
+}
+
+// Solid color picker sync
+document.getElementById('solid-color-picker')?.addEventListener('input', function() {
+  document.getElementById('solid-color-hex').value = this.value;
+  updateColorPreview();
+});
+document.getElementById('solid-color-hex')?.addEventListener('input', function() {
+  const v = this.value.trim();
+  if (/^#[0-9a-fA-F]{3,8}$/.test(v) || /^rgb/.test(v)) {
+    document.getElementById('solid-color-picker').value = v.length === 7 ? v : '#000000';
+  }
+  updateColorPreview();
+});
+
+// Gradient pickers sync
+['grad-color1','grad-color2','grad-color-mid','grad-direction'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => { updateColorPreview(); });
+});
+document.getElementById('grad-radial')?.addEventListener('change', function() {
+  document.getElementById('grad-direction').closest('div').style.opacity = this.checked ? '0.4' : '1';
+  updateColorPreview();
+});
+document.getElementById('grad-use-mid')?.addEventListener('change', function() {
+  document.getElementById('grad-color-mid').style.display = this.checked ? 'inline-block' : 'none';
+  updateColorPreview();
+});
+
+// Gradient natija inputi qo'lda tahrirlanganda preview yangilansin
+document.getElementById('gradient-result-input')?.addEventListener('input', function() {
+  const val = this.value.trim();
+  if (val) {
+    document.getElementById('admin-bg-color').value = val;
+    document.getElementById('bg-preview').style.background = val;
+  }
+});
+
+// Emoji preview update
+document.getElementById('admin-bg-emoji')?.addEventListener('input', function() {
+  document.getElementById('bg-preview').textContent = this.value;
+});
+
+// Pattern controls
+document.getElementById('pattern-color')?.addEventListener('input', () => {
+  document.getElementById('admin-bg-pattern-color').value = document.getElementById('pattern-color').value;
+  updateAdminPreview();
+});
+document.getElementById('pattern-opacity')?.addEventListener('input', function() {
+  document.getElementById('pattern-opacity-val').textContent = Math.round(this.value * 100) + '%';
+  document.getElementById('admin-bg-pattern-opacity').value = this.value;
+  updateAdminPreview();
+});
+document.getElementById('pattern-speed')?.addEventListener('input', function() {
+  document.getElementById('pattern-speed-val').textContent = this.value + 'x';
+  document.getElementById('admin-bg-pattern-speed').value = this.value;
+  updateAdminPreview();
+});
+document.getElementById('pattern-size')?.addEventListener('input', function() {
+  document.getElementById('pattern-size-val').textContent = this.value + 'x';
+  document.getElementById('admin-bg-pattern-size').value = this.value;
+  updateAdminPreview();
+});
+
+window.adminDeleteBackground = async function(bgId, name) {
+  if (!await showConfirm({
+    icon: '🗑️', title: "FONNI O'CHIRISH",
+    message: `"${name}" fonini o'chirishni xohlaysizmi?\nBarcha foydalanuvchilarning kolleksiyasidan va do'kondan butunlay o'chadi!`,
+    okText: "Ha, o'chir", cancelText: 'Bekor qilish'
+  })) return;
+  try {
+    // 1. Firebase backgrounds/ dan o'chir
+    await remove(ref(db, `backgrounds/${bgId}`));
+
+    // 2. Barcha foydalanuvchilardan kolleksiya, activeBg, activeAvatar ni tozala
+    const usersSnap = await get(ref(db, 'users'));
+    if (usersSnap.exists()) {
+      const updates = {};
+      usersSnap.forEach(child => {
+        const u = child.val();
+        const rawCol = u.collection || [];
+        const col = (Array.isArray(rawCol) ? rawCol : Object.values(rawCol)).filter(id => id !== bgId);
+        updates[`users/${child.key}/collection`] = col;
+        if (u.activeBg === bgId) updates[`users/${child.key}/activeBg`] = 'default_bg';
+        if (u.activeAvatar === bgId) updates[`users/${child.key}/activeAvatar`] = 'default_avatar';
+      });
+      if (Object.keys(updates).length) await update(ref(db), updates);
+    }
+
+    // 3. Admin lokal cache + adminState yangilansin
+    if (currentUser.collection) {
+      currentUser.collection = (Array.isArray(currentUser.collection)
+        ? currentUser.collection : Object.values(currentUser.collection)
+      ).filter(id => id !== bgId);
+    }
+    const adminUpd = {};
+    if (currentUser.activeBg === bgId) { currentUser.activeBg = 'default_bg'; adminUpd.activeBg = 'default_bg'; }
+    if (currentUser.activeAvatar === bgId) { currentUser.activeAvatar = 'default_avatar'; adminUpd.activeAvatar = 'default_avatar'; }
+    if (Object.keys(adminUpd).length) await update(ref(db, 'adminState'), adminUpd);
+
+    toast(`✅ "${name}" foni hamma yerdan o'chirildi!`, 'success');
+    applyUserBackground();
+    loadShop();
+    loadAdminBackgrounds();
+  } catch(e) {
+    toast("O'chirishda xato: " + e.message, 'error');
+  }
+};
+
+async function loadAdminBackgrounds() {
+  if (!currentUser?.isAdmin) return;
+  const snap = await get(ref(db, 'backgrounds'));
+  const container = document.getElementById('admin-backgrounds-list');
+  if (!container) return;
+  if (!snap.exists()) {
+    container.innerHTML = '<div class="text-mono text-muted" style="font-size:11px;">Hali fon qo\'shilmagan</div>';
+    return;
+  }
+  const items = [];
+  snap.forEach(child => { const v = child.val(); v._id = child.key; items.push(v); });
+  container.innerHTML = `<table class="users-table"><thead><tr>
+    <th>Ko'rinish</th><th>Nom</th><th>Narx</th><th>Tur</th><th>O'chirish</th>
+  </tr></thead><tbody>${items.map(bg => `
+    <tr>
+      <td><div style="width:40px;height:30px;background:${bg.color||'#111'};border:1px solid var(--border);border-radius:3px;overflow:hidden;position:relative;"></div></td>
+      <td style="font-family:var(--font-mono);font-size:11px;">${escHtml(bg.name||'—')}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;">${bg.price > 0 ? bg.price + " so'm" : 'Bepul'}</td>
+      <td style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">${bg.type || 'background'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="adminDeleteBackground('${bg._id}','${escHtml(bg.name||'')}')">🗑️</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+window.adminAddBackground = async function() {
+  const name = document.getElementById('admin-bg-name').value.trim();
+  const type = document.getElementById('admin-bg-type').value;
+  let color = '';
+  if (colorMode === 'solid') {
+    color = document.getElementById('solid-color-hex').value.trim();
+    if (!color) color = document.getElementById('solid-color-picker').value || '#1a1a2e';
+  } else {
+    color = buildGradientValue();
+  }
+  document.getElementById('admin-bg-color').value = color;
+
+  const pattern = document.getElementById('admin-bg-pattern').value || 'none';
+  const patternColor = document.getElementById('admin-bg-pattern-color').value || '#ffffff';
+  const patternOpacity = parseFloat(document.getElementById('admin-bg-pattern-opacity').value) || 0.3;
+  const patternSpeed = parseFloat(document.getElementById('admin-bg-pattern-speed').value) || 1;
+  const patternSize = parseFloat(document.getElementById('admin-bg-pattern-size').value) || 1;
+  const price = parseInt(document.getElementById('admin-bg-price').value) || 0;
+  const rewardLevel = parseInt(document.getElementById('admin-bg-reward-level').value) || 0;
+
+  if (!name) return toast("Fon nomini kiriting", 'error');
+  if (!color) return toast("Rangni tanlang", 'error');
+  if (price < 0) return toast("Narx manfiy bo'lishi mumkin emas", 'error');
+
+  try {
+    const bgRef = push(ref(db, 'backgrounds'));
+    await set(bgRef, {
+      name, type, color, pattern, patternColor, patternOpacity, patternSpeed, patternSize,
+      price, rewardLevel: rewardLevel || null, createdAt: serverTimestamp()
+    });
+
+    // Faqat BEPUL (price===0) fonlarni barcha foydalanuvchilarga ber
+    if (price === 0) {
+      const usersSnap = await get(ref(db, 'users'));
+      if (usersSnap.exists()) {
+        const updates = {};
+        usersSnap.forEach(child => {
+          const u = child.val();
+          const rawCol = u.collection || [];
+          const col = Array.isArray(rawCol) ? [...rawCol] : Object.values(rawCol);
+          if (!col.includes(bgRef.key)) {
+            col.push(bgRef.key);
+            updates[`users/${child.key}/collection`] = col;
+          }
+        });
+        if (Object.keys(updates).length > 0) await update(ref(db), updates);
+      }
+    }
+    // Faqat bepul fonni admin kolleksiyasiga ham qo'sh
+    if (price === 0) {
+      if (!currentUser.collection) currentUser.collection = [];
+      if (!currentUser.collection.includes(bgRef.key)) currentUser.collection.push(bgRef.key);
+    }
+
+    const msg = price === 0
+      ? `✅ "${name}" bepul foni qo'shildi — barcha foydalanuvchilarga berildi!`
+      : `✅ "${name}" pullik foni do'konga qo'shildi (${price} so'm) — sotib olinishi kutilmoqda`;
+    toast(msg, 'success');
+    ['admin-bg-name','admin-bg-price','admin-bg-reward-level'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('admin-bg-color').value = '';
+    document.getElementById('solid-color-hex').value = '';
+    document.getElementById('solid-color-picker').value = '#1a1a2e';
+    document.getElementById('gradient-result-input').value = '';
+    document.getElementById('bg-preview').style.background = '';
+    document.getElementById('admin-bg-pattern').value = 'none';
+    document.querySelectorAll('.pattern-btn').forEach(b => b.classList.toggle('active', b.dataset.pattern === 'none'));
+    if (_previewAnim) { _previewAnim.cancel(); _previewAnim = null; }
+    const previewCanvas = document.getElementById('bg-preview-canvas');
+    if (previewCanvas) previewCanvas.getContext('2d').clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+    loadShop();
+    loadAdminBackgrounds();
+  } catch(e) {
+    toast('Fon qo\'shishda xato: ' + e.message, 'error');
+    console.error('adminAddBackground error:', e);
+  }
+};
+
+// ── CUSTOM CONFIRM ────────────────────────────
+function showConfirm({ icon = '⚠️', title = 'TASDIQLASH', message = '', okText = 'Tasdiqlash', cancelText = 'Bekor qilish', okClass = '' } = {}) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('confirm-overlay');
+    document.getElementById('confirm-icon').textContent = icon;
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-message').textContent = message;
+    const okBtn = document.getElementById('confirm-ok');
+    const cancelBtn = document.getElementById('confirm-cancel');
+    okBtn.textContent = okText;
+    cancelBtn.textContent = cancelText;
+    okBtn.className = okClass || '';
+    overlay.classList.add('open');
+    const close = (val) => { overlay.classList.remove('open'); resolve(val); };
+    okBtn.onclick = () => close(true);
+    cancelBtn.onclick = () => close(false);
+    overlay.onclick = (e) => { if (e.target === overlay) close(false); };
+  });
+}
+
+// ── UTILS ─────────────────────────────────────
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
